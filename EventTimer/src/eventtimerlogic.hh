@@ -24,7 +24,7 @@ public:
      * @brief Constructor.
      * @param dbHandler DatabaseHandler.
      * @param refreshRate Event schedule refresh rate in milliseconds.
-     * @pre dbHandler is in a valid state and refreshRate > 0.
+     * @pre refreshRate > 0.
      */
     EventTimerLogic(DatabaseHandler dbHandler,
                     int refreshRate);

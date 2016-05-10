@@ -5,68 +5,188 @@
  */
 
 #include "databasehandler.hh"
+#include <QSqlQuery>
+#include <QSqlError>
+#include <QSqlRecord>
+#include <QVariant>
 
 namespace EventTimerNS
 {
 
-DatabaseHandler::DatabaseHandler(const QString& dbType,
-                                 const QString& dbName,
-                                 const QString& tableName)
+const QString DatabaseHandler::CONNECTION_STRING_("EventTimerDbConnection");
+
+DatabaseHandler::DatabaseHandler(const DbSetup& setup) :
+
+    db_(), errorString_(), errorFlag_(false), tableName_(setup.tableName)
 {
-    Q_ASSERT(!dbType.isEmpty());
-    Q_ASSERT(!dbName.isEmpty());
-    Q_ASSERT(!tableName.isEmpty());
+    Q_ASSERT(!setup.dbType.isEmpty());
+    Q_ASSERT(!setup.dbName.isEmpty());
+    Q_ASSERT(!setup.tableName.isEmpty());
+    this->openDB(setup);
 }
+
 
 DatabaseHandler::~DatabaseHandler()
 {
+    db_.close();
 }
 
 
 bool DatabaseHandler::isValid() const
 {
-    return false;
+    return db_.isValid() && !errorFlag_;
 }
+
 
 QString DatabaseHandler::errorString() const
 {
-    return QString();
+    return errorString_;
 }
+
 
 int DatabaseHandler::addEvent(Event* e)
 {
     Q_ASSERT(e != nullptr);
-    Q_ASSERT(e->id == -1);
-    return -1;
+    Q_ASSERT(e->id() == -1);
+    Q_ASSERT(this->isValid());
+
+    QSqlQuery q("INSERT INTO " + tableName_ +
+                " (name, timestamp, interval, repeats, static)"
+                " VALUES(" + e->name() + " " + e->timestamp() + " " +
+                QString::number(e->interval()) + " " +
+                QString::number(e->repeats()) + " " +
+                (e->type() == Event::STATIC ? "1" : "0") +
+                ")", db_);
+
+    if (q.lastError().type() != QSqlError::NoError) {
+        errorString_ = q.lastError().text();
+        return -1;
+    }
+
+    // Find out the id of latest insertion (hackish).
+    QSqlQuery q2("SELECT MAX(id) FROM " + tableName_, db_);
+    q2.next();
+    int latestId = q2.value(0).toInt();
+    e->setId(latestId);
+    return latestId;
 }
+
 
 bool DatabaseHandler::removeEvent(int eventId)
 {
-    Q_UNUSED(eventId);
-    return false;
+    Q_ASSERT(this->isValid());
+
+    QSqlQuery q("DELETE FROM " + tableName_ + " WHERE id = " + QString(eventId), db_);
+    if (q.lastError().type() != QSqlError::NoError) {
+        errorString_ = q.lastError().text();
+        return false;
+    }
+    return true;
 }
+
 
 bool DatabaseHandler::clearDynamic()
 {
-    return false;
+    Q_ASSERT (this->isValid());
+
+    QSqlQuery q("DELETE FROM " + tableName_ + " WHERE static = 0", db_);
+    if (q.lastError().type() != QSqlError::NoError) {
+        errorString_ = q.lastError().text();
+        return false;
+    }
+    return true;
 }
+
 
 bool DatabaseHandler::clearAll()
 {
-    return false;
+    Q_ASSERT (this->isValid());
+
+    QSqlQuery q("DELETE FROM " + tableName_, db_);
+    if (q.lastError().type() != QSqlError::NoError) {
+        errorFlag_ = q.lastError().text();
+        return false;
+    }
+    return true;
 }
+
 
 std::vector<Event> DatabaseHandler::checkOccured(const QDateTime& time)
 {
     Q_ASSERT(time.isValid());
-    return std::vector<Event>();
+    Q_ASSERT(this->isValid());
+
+    // Fetch event data.
+    QSqlQuery q("SELECT * FROM " + tableName_ +
+                " WHERE timestamp < " +
+                time.toString("yyyy-MM-dd hh:mm:ss:zzz"), db_);
+
+    if (q.lastError().type() != QSqlError::NoError) {
+        errorString_ = q.lastError().text();
+        return std::vector<Event>();
+    }
+
+    // Parse events.
+    std::vector<Event> events;
+    while (q.next()) {
+        Event e(q.value("name").toString(),
+                q.value("timestamp").toString(),
+                q.value("static").toString() == "1" ? Event::STATIC : Event::DYNAMIC,
+                q.value("interval").toUInt(),
+                q.value("repeats").toUInt());
+        e.setId(q.value("id").toInt());
+        events.push_back(e);
+    }
+    return e;
 }
 
-bool DatabaseHandler::updateEvent(int eventID, const Event* e)
+
+bool DatabaseHandler::updateEvent(int eventID, const Event& e)
 {
-    Q_ASSERT(e != nullptr);
-    Q_UNUSED(eventID);
-    return false;
+    Q_ASSERT(this->isValid());
+
+    QSqlQuery q("UPDATE "+ tableName_ +
+                " SET name = "  + e.name() +
+                " timestamp = " + e.timestamp() +
+                " interval = "  + QString::number(e.interval()) +
+                " repeats = "   + QString::number(e.repeats()) +
+                " static = "    + e.type() == (Event.STATIC ? "1" : "0") +
+                " WHERE id = "  + QString::number(eventID),
+                db_);
+
+    if (q.lastError().type() != QSqlError.NoError){
+        errorString_ = q.lastError().text();
+        return false;
+    }
+    return true;
+}
+
+
+void DatabaseHandler::openDB(const DbSetup& setup)
+{
+    db_ = QSqlDatabase::addDatabase(setup.dbType, CONNECTION_STRING_);
+    db_.setDatabaseName(setup.dbName);
+
+    if (!setup.dbHostName.isEmpty()) db_.setHostName(dbHostName);
+    if (!setup.userName.isEmpty())   db_.setUserName(userName);
+    if (!setup.password.isEmpty())   db_.setPassword(password);
+
+    if (db_.open()) {
+        // Create table id not created.
+        QSqlQuery q("CREATE TABLE IF NOT EXISTS " + tableName +
+                    " (id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                    " name TEXT, timestamp TEXT, interval INTEGER,"
+                    " repeats INTEGER, static INTEGER )",
+                    db_);
+
+        if (q.lastError().ErrorType != QSqlError::NoError) {
+            errorString_ = q.lastError().text();
+            errorFlag_ = true;
+        }
+    }
+    else {
+        errorString_ = db_.lastError().text();
+    }
 }
 
 } // namespace EventTimerNS
