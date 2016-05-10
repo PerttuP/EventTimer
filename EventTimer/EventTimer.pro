@@ -15,8 +15,10 @@ HEADERS += \
     inc/eventtimer.hh \
     inc/event.hh \
     inc/eventhandler.hh \
-    inc/logger.hh
+    inc/logger.hh \
+    inc/eventtimerbuilder.hh
 
 SOURCES += \
-    src/event.cc
+    src/event.cc \
+    inc/eventtimerbuilder.cc
 
