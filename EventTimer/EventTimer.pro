@@ -1,5 +1,5 @@
 
-QT += core xml sql
+QT += core sql
 QT -= gui
 
 CONFIG += c++11
@@ -16,9 +16,13 @@ HEADERS += \
     inc/event.hh \
     inc/eventhandler.hh \
     inc/logger.hh \
-    inc/eventtimerbuilder.hh
+    inc/eventtimerbuilder.hh \
+    src/eventtimerlogic.hh \
+    src/databasehandler.hh
 
 SOURCES += \
     src/event.cc \
-    inc/eventtimerbuilder.cc
+    src/eventtimerbuilder.cc \
+    src/eventtimerlogic.cc \
+    src/databasehandler.cc
 

@@ -9,6 +9,7 @@
 #define EVENTHANDLER_HH
 
 #include <QString>
+#include "event.hh"
 
 namespace EventTimerNS
 {
@@ -33,7 +34,7 @@ public:
      * @post Handler implementation takes care of handling the event.
      *  Event handling is expected to be re-entrant.
      */
-    virtual void notify(int eventID, const QString& eventName) = 0;
+    virtual void notify(Event event) = 0;
 };
 
 
