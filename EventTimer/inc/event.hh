@@ -44,7 +44,8 @@ public:
      * @post Name, time, type, interval and repeats have been set.
      *  Event's id is -1 (unassigned).
      */
-    Event(QString name, QString timestamp,
+    Event(const QString& name,
+          const QString& timestamp,
           Type type = DYNAMIC,
           unsigned interval = 0,
           unsigned repeats = 0);

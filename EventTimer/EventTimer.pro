@@ -13,7 +13,9 @@ INCLUDEPATH += \
 
 HEADERS += \
     inc/eventtimer.hh \
-    inc/event.hh
+    inc/event.hh \
+    inc/eventhandler.hh \
+    inc/logger.hh
 
 SOURCES += \
     src/event.cc
