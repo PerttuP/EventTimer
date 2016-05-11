@@ -124,6 +124,15 @@ public:
      */
     bool updateEvent(int eventID, const Event& e);
 
+    /**
+     * @brief Get event matching the id number.
+     * @param eventId Searched id number.
+     * @return Event matching the id number. If no such event exists or query fails,
+     *  returns event with id = -1. Extra information is available calling errorString().
+     * @pre id > 0. DatabaseHandler is in a valid state.
+     */
+    Event getEvent(int eventId);
+
 
 private:
 
@@ -133,6 +142,7 @@ private:
     QString tableName_;
 
     static const QString CONNECTION_STRING_;
+    static int connectionCount_;
 
 
     void openDB(const DbSetup& setup);
