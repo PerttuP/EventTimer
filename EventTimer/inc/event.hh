@@ -29,6 +29,14 @@ public:
     };
 
     /**
+     * @brief Default constructor is implemented for conveniance.
+     * @pre -
+     * @post Constructs an invalid event (name and timestamp are empty strings).
+     *  Do use such events with EventTimer.
+     */
+    Event();
+
+    /**
      * @brief Constructor.
      * @param name Event's name.
      * @param timestamp Event's first time of occurence. Valid formats:

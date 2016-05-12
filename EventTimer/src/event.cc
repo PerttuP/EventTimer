@@ -9,6 +9,12 @@
 namespace EventTimerNS
 {
 
+Event::Event() :
+    name_(), timestamp_(), interval_(0), repeats_(0), type_(Event::STATIC), id_(-1)
+{
+}
+
+
 Event::Event(const QString& name,
              const QString& timestamp,
              Type type,
