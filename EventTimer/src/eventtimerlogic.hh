@@ -9,6 +9,7 @@
 
 #include "eventtimer.hh"
 #include "databasehandler.hh"
+#include <memory>
 
 namespace EventTimerNS
 {
@@ -26,7 +27,7 @@ public:
      * @param refreshRate Event schedule refresh rate in milliseconds.
      * @pre refreshRate > 0.
      */
-    EventTimerLogic(DatabaseHandler dbHandler,
+    EventTimerLogic(std::unique_ptr<DatabaseHandler> dbHandler,
                     int refreshRate);
 
     /**

@@ -53,6 +53,16 @@ public:
     ~DatabaseHandler();
 
     /**
+     * @brief Copy-constructor is forbidden.
+     */
+    DatabaseHandler(const DatabaseHandler&) = delete;
+
+    /**
+     * @brief Assingment operator is forbidden.
+     */
+    DatabaseHandler& operator=(const DatabaseHandler&) = delete;
+
+    /**
      * @brief Check if DatabaseHandler is in a valid state.
      * @return True, if current state is valid. If state is invalid, error
      *  message is available calling errorString().

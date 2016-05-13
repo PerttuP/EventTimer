@@ -24,6 +24,23 @@ public:
 private Q_SLOTS:
 
     /**
+     * @brief Test initializing dbHandler with unknown database type string.
+     */
+    void unknownDbTypeTest();
+
+    /**
+     * @brief Test initializing dbHandler with invalid table name.
+     */
+    void invalidTableNameTest();
+    void invalidTableNameTest_data();
+
+    /**
+     * @brief Test getting event that does not exist.
+     */
+    void getEventNotFound();
+    void getEventNotFound_data();
+
+    /**
      * @brief Test adding events to the database.
      */
     void addEventsTest();
@@ -66,17 +83,6 @@ private Q_SLOTS:
     void addUpdateTest_data();
 
     /**
-     * @brief Test initializing dbHandler with invalid table name.
-     */
-    void invalidTableNameTest();
-    void invalidTableNameTest_data();
-
-    /**
-     * @brief Test initializing dbHandler with unknown database type string.
-     */
-    void unknownDbTypeTest();
-
-    /**
      * @brief Test using simultaniously two handlers on different tables in same database.
      */
     void TwoHandlersDifferentTablesTest();
@@ -99,6 +105,81 @@ DatabaseHandlerTest::DatabaseHandlerTest()
 }
 
 
+void DatabaseHandlerTest::unknownDbTypeTest()
+{
+    using namespace EventTimerNS;
+    DatabaseHandler::DbSetup setup;
+    setup.dbType = "Not_a_supported_db_driver";
+    setup.dbName = "failDb";
+    setup.tableName = "failTable";
+    setup.dbHostName = QString();
+    setup.userName = QString();
+    setup.password = QString();
+
+    DatabaseHandler h(setup);
+    QVERIFY(!h.isValid());
+}
+
+
+void DatabaseHandlerTest::invalidTableNameTest()
+{
+    QFETCH(QString, dbType);
+    QFETCH(QString, dbName);
+    QFETCH(QString, tableName);
+    QFETCH(QString, dbHost);
+    QFETCH(QString, userName);
+    QFETCH(QString, password);
+
+    // 'invalidate' table name.
+    tableName = "123" + tableName + "? i n v a l i d a t e d !";
+
+    using namespace EventTimerNS;
+    DatabaseHandler::DbSetup setup;
+    setup.dbType = dbType;
+    setup.dbName = dbName;
+    setup.tableName = tableName;
+    setup.dbHostName = dbHost;
+    setup.userName = userName;
+    setup.password = password;
+
+    DatabaseHandler h(setup);
+    QVERIFY(!h.isValid());
+}
+
+
+void DatabaseHandlerTest::invalidTableNameTest_data()
+{
+    this->addEventsTest_data();
+}
+
+
+void DatabaseHandlerTest::getEventNotFound()
+{
+    QFETCH(QString, dbType);
+    QFETCH(QString, dbName);
+    QFETCH(QString, tableName);
+    QFETCH(QString, dbHost);
+    QFETCH(QString, userName);
+    QFETCH(QString, password);
+
+    // Setup parameters.
+    using namespace EventTimerNS;
+    std::shared_ptr<DatabaseHandler> handler =
+            this->setupDB(dbType,dbName, tableName, dbHost, userName, password);
+
+    // Clear db.
+    QVERIFY( handler->clearAll() );
+    Event e = handler->getEvent(1);
+    QCOMPARE(e.id(), -1);
+}
+
+
+void DatabaseHandlerTest::getEventNotFound_data()
+{
+    addEventsTest_data();
+}
+
+
 void DatabaseHandlerTest::addEventsTest()
 {
     QFETCH(QString, dbType);
@@ -110,19 +191,8 @@ void DatabaseHandlerTest::addEventsTest()
 
     // Setup parameters.
     using namespace EventTimerNS;
-    DatabaseHandler::DbSetup setup;
-    setup.dbType = dbType;
-    setup.dbName = dbName;
-    setup.tableName = tableName;
-    setup.dbHostName = dbHost;
-    setup.userName = userName;
-    setup.password = password;
-
-    // Open and clear database.
-    DatabaseHandler handler(setup);
-    QVERIFY2(handler.isValid(), "Initializing database failed");
-    QVERIFY(handler.clearAll());
-    QVERIFY(handler.isValid());
+    std::shared_ptr<DatabaseHandler> handler =
+            this->setupDB(dbType,dbName, tableName, dbHost, userName, password);
 
     // Populate database.
     QDateTime current = QDateTime::currentDateTime();
@@ -134,7 +204,7 @@ void DatabaseHandlerTest::addEventsTest()
         Event::Type type = i%2 == 0 ? Event::STATIC : Event::DYNAMIC;
         Event e(name, timestamp, type, i, i);
 
-        int id = handler.addEvent(&e);
+        int id = handler->addEvent(&e);
         QCOMPARE(id, i);
         QCOMPARE(e.id(), i);
         events.push_back(e);
@@ -142,10 +212,10 @@ void DatabaseHandlerTest::addEventsTest()
 
     // Verify that database contains correct data.
     for (Event e : events) {
-        Event e2 = handler.getEvent(e.id());
+        Event e2 = handler->getEvent(e.id());
         this->compareEvents(e2, e);
     }
-    QVERIFY(handler.clearAll());
+    QVERIFY(handler->clearAll());
 }
 
 
@@ -464,54 +534,6 @@ void DatabaseHandlerTest::addUpdateTest_data()
 }
 
 
-void DatabaseHandlerTest::invalidTableNameTest()
-{
-    QFETCH(QString, dbType);
-    QFETCH(QString, dbName);
-    QFETCH(QString, tableName);
-    QFETCH(QString, dbHost);
-    QFETCH(QString, userName);
-    QFETCH(QString, password);
-
-    // 'invalidate' table name.
-    tableName = "123" + tableName + "? i n v a l i d a t e d !";
-
-    using namespace EventTimerNS;
-    DatabaseHandler::DbSetup setup;
-    setup.dbType = dbType;
-    setup.dbName = dbName;
-    setup.tableName = tableName;
-    setup.dbHostName = dbHost;
-    setup.userName = userName;
-    setup.password = password;
-
-    DatabaseHandler h(setup);
-    QVERIFY(!h.isValid());
-}
-
-
-void DatabaseHandlerTest::invalidTableNameTest_data()
-{
-    this->addEventsTest_data();
-}
-
-
-void DatabaseHandlerTest::unknownDbTypeTest()
-{
-    using namespace EventTimerNS;
-    DatabaseHandler::DbSetup setup;
-    setup.dbType = "Not_a_supported_db_driver";
-    setup.dbName = "failDb";
-    setup.tableName = "failTable";
-    setup.dbHostName = QString();
-    setup.userName = QString();
-    setup.password = QString();
-
-    DatabaseHandler h(setup);
-    QVERIFY(!h.isValid());
-}
-
-
 void DatabaseHandlerTest::TwoHandlersDifferentTablesTest()
 {
     QFETCH(QString, dbType);
@@ -560,7 +582,6 @@ void DatabaseHandlerTest::TwoHandlersDifferentTablesTest()
     }
 
     // Remove events.
-    /*
     for (int j = 1; j<11; ++j)
     {
         for (unsigned i = 0; i<handlers.size(); ++i) {
@@ -576,7 +597,6 @@ void DatabaseHandlerTest::TwoHandlersDifferentTablesTest()
         tmp = handler2->getEvent(e.id());
         QCOMPARE(tmp.id(), -1);
     }
-    */
 }
 
 

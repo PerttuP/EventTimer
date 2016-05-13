@@ -9,10 +9,10 @@
 namespace EventTimerNS
 {
 
-EventTimerLogic::EventTimerLogic(DatabaseHandler dbHandler,
+EventTimerLogic::EventTimerLogic(std::unique_ptr<DatabaseHandler> dbHandler,
                                  int refreshRate)
 {
-    Q_ASSERT(dbHandler.isValid());
+    Q_UNUSED(dbHandler);
     Q_ASSERT(refreshRate > 0);
 }
 
