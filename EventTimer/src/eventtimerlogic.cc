@@ -17,7 +17,7 @@ EventTimerLogic::EventTimerLogic(std::unique_ptr<DatabaseHandler> dbHandler,
     dbHandler_(std::move(dbHandler)), eventHandler_(nullptr),
     logger_(nullptr), updateTimer_()
 {
-    Q_ASSERT(dbHandler_ == nullptr);
+    Q_ASSERT(dbHandler_ != nullptr);
     Q_ASSERT(refreshRate > 0)
     ;
     updateTimer_.setInterval(refreshRate);

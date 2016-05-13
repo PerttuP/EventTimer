@@ -3,4 +3,5 @@ TEMPLATE = subdirs
 SUBDIRS += \
     EventTest \
     DatabaseHandlerTest \
-    DatabaseHandlerBenchmark
+    DatabaseHandlerBenchmark \
+    EventTimerLogicTest

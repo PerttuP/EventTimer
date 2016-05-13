@@ -21,6 +21,8 @@ namespace EventTimerNS
  */
 class EventTimerLogic : public QObject, public EventTimer
 {
+    Q_OBJECT
+
 public:
 
     /**
@@ -50,7 +52,7 @@ public:
     virtual void stop();
 
 
-private Q_SLOTS:
+private slots:
 
     /**
      * @brief Check database for expired events and notify the EventHandler.
