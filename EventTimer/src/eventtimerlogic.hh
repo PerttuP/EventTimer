@@ -10,6 +10,8 @@
 #include "eventtimer.hh"
 #include "databasehandler.hh"
 #include <memory>
+#include <QTimer>
+#include <QObject>
 
 namespace EventTimerNS
 {
@@ -17,7 +19,7 @@ namespace EventTimerNS
 /**
  * @brief The EventTimerLogic class implements the EventTimer interface.
  */
-class EventTimerLogic : public EventTimer
+class EventTimerLogic : public QObject, public EventTimer
 {
 public:
 
@@ -28,7 +30,7 @@ public:
      * @pre refreshRate > 0.
      */
     EventTimerLogic(std::unique_ptr<DatabaseHandler> dbHandler,
-                    int refreshRate);
+                    int refreshRate, QObject* parent = 0);
 
     /**
      * @brief Destructor.
@@ -46,6 +48,24 @@ public:
     virtual bool isValid() const;
     virtual void start();
     virtual void stop();
+
+
+private Q_SLOTS:
+
+    /**
+     * @brief Check database for expired events and notify the EventHandler.
+     */
+    void checkEvents();
+
+
+private:
+
+    std::unique_ptr<DatabaseHandler> dbHandler_;
+    EventHandler* eventHandler_;
+    Logger* logger_;
+    QTimer updateTimer_;
+
+    void logMessage(const QString& msg);
 };
 
 } // namespace EventTimerNS

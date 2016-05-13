@@ -9,6 +9,10 @@
 namespace EventTimerNS
 {
 
+
+const QString Event::TIME_FORMAT ("yyyy-MM-dd hh:mm:ss:zzz");
+
+
 Event::Event() :
     name_(), timestamp_(), interval_(0), repeats_(0), type_(Event::STATIC), id_(-1)
 {

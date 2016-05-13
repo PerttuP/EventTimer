@@ -21,6 +21,11 @@ class Event
 public:
 
     /**
+     * @brief TIME_FORMAT
+     */
+    static const QString TIME_FORMAT;
+
+    /**
      * @brief Type of event. Static events are preserved in database between
      *  application runs, while dynamic events are removed at start-up.
      */
@@ -39,10 +44,8 @@ public:
     /**
      * @brief Constructor.
      * @param name Event's name.
-     * @param timestamp Event's first time of occurence. Valid formats:
-     *  'dd-MM-yyyy hh:mm',
-     *  'dd-MM-yyyy hh:mm:ss' and
-     *  'dd-MM-yyyy hh:mm:ss:zzz'
+     * @param timestamp Event's first time of occurence. Valid format:
+     *  'dd-MM-yyyy hh:mm:ss:zzz', also defined by TIME_FORMAT.
      * @param type Event type (static or dynamic).
      * @param interval Time between repeated events (in milliseconds).
      *  Value 0 implies single-shot event.

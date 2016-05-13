@@ -29,6 +29,9 @@ public:
         QString dbType;      // Database type. Refer to QSqlDriver documentation for avalable type strings.
         QString dbName;      // Name of the database.
         QString tableName;   // Name for used table in database.
+        QString dbHostName;  // Database host name.
+        QString userName;    // Database user name.
+        QString password;    // Database password.
         int refreshRateMsec; // How often EventTimer will check for occured events.
     };
 
