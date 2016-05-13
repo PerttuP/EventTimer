@@ -2,4 +2,5 @@ TEMPLATE = subdirs
 
 SUBDIRS += \
     EventTest \
-    DatabaseHandlerTest
+    DatabaseHandlerTest \
+    DatabaseHandlerBenchmark
