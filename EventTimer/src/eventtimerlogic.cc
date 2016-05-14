@@ -32,6 +32,9 @@ EventTimerLogic::~EventTimerLogic()
 
 int EventTimerLogic::addEvent(Event* e)
 {
+    Q_ASSERT(e != nullptr);
+    Q_ASSERT(e->id() == -1);
+
     int id = dbHandler_->addEvent(e);
     if (id == -1){
         this->logMessage("Could not add event: " + this->errorString());
@@ -44,6 +47,8 @@ int EventTimerLogic::addEvent(Event* e)
 
 bool EventTimerLogic::removeEvent(int eventId)
 {
+    Q_ASSERT(eventId > 0);
+
     bool rv = dbHandler_->removeEvent(eventId);
     if (rv) {
         this->logMessage("Event removed (id = " + QString::number(eventId) + ").");
@@ -53,6 +58,27 @@ bool EventTimerLogic::removeEvent(int eventId)
                          errorString() + ".");
     }
     return rv;
+}
+
+
+Event EventTimerLogic::getEvent(int eventId)
+{
+    Q_ASSERT(eventId > 0);
+
+    Event e = dbHandler_->getEvent(eventId);
+    if (e.id() == -1) {
+        if (this->errorString().isEmpty()){
+            logMessage("Could not get event (id=" +
+                       QString::number(eventId) + "): " +
+                       "No such event.");
+        }
+        else {
+            logMessage("Could not get event (id=" +
+                       QString::number(eventId) + "): " +
+                       this->errorString() + ".");
+        }
+    }
+    return e;
 }
 
 
@@ -108,8 +134,10 @@ bool EventTimerLogic::isValid() const
 void EventTimerLogic::start()
 {
     Q_ASSERT(eventHandler_ != nullptr);
+    Q_ASSERT(this->isValid());
 
-    // Remove expired events
+    // Remove expired and dynamic events
+    this->clearDynamic();
     std::vector<Event> events = dbHandler_->checkOccured(QDateTime::currentDateTime());
     for (Event e : events) {
         this->removeEvent(e.id());

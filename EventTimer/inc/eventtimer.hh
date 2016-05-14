@@ -44,11 +44,22 @@ public:
      * @brief Cancel timed event.
      * @param eventId Id of event to be cancelled.
      * @return true, if event was cancelled successfully.
-     * @pre eventId >= 0.
+     * @pre eventId > 0.
      * @post Removes event or returns false and does not modify schedules.
      *  In case of failure, error message is available calling errorString().
      */
     virtual bool removeEvent(int eventId) = 0;
+
+    /**
+     * @brief Get event matching to the id.
+     * @param eventId Event id.
+     * @return Corresponding event with its current values
+     *  (may have been updated since adding the event).
+     *  If getting event fails, returns event with id == -1.
+     * @pre eventID > 0.
+     * @post If getting event fails, more info is available calling errorString().
+     */
+    virtual Event getEvent(int eventId) = 0;
 
     /**
      * @brief Remove all dynamic events from schedule.

@@ -42,6 +42,7 @@ public:
     // EventTimer interface
     virtual int addEvent(Event* e);
     virtual bool removeEvent(int eventId);
+    virtual Event getEvent(int eventId);
     virtual bool clearDynamic();
     virtual bool clearAll();
     virtual void setEventHandler(EventHandler* handler);
