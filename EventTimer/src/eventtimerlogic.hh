@@ -69,6 +69,8 @@ private:
     QTimer updateTimer_;
 
     void logMessage(const QString& msg);
+
+    void updateExpired(const Event& e);
 };
 
 } // namespace EventTimerNS

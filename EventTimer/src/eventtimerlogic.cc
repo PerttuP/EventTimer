@@ -140,7 +140,7 @@ void EventTimerLogic::start()
     this->clearDynamic();
     std::vector<Event> events = dbHandler_->checkOccured(QDateTime::currentDateTime());
     for (Event e : events) {
-        this->removeEvent(e.id());
+        this->updateExpired(e);
     }
 
     updateTimer_.start();
@@ -166,19 +166,7 @@ void EventTimerLogic::checkEvents()
 
     // Update or remove events.
     for (Event e : expired) {
-        if (e.repeats() == 0){
-            this->removeEvent(e.id());
-        }
-        else {
-            // Update repreats and timestamp
-            QDateTime newTime = QDateTime::fromString(e.timestamp(), Event::TIME_FORMAT).addMSecs(e.interval());
-            Event updated(e.name(), newTime.toString(Event::TIME_FORMAT), e.type(), e.interval(), e.repeats()-1);
-            if (!dbHandler_->updateEvent(e.id(), updated)){
-                logMessage("Failed to update event (id=" +
-                           QString::number(e.id()) + "): " +
-                           errorString() );
-            }
-        }
+        this->updateExpired(e);
     }
 
     // Notify event handler.
@@ -192,6 +180,32 @@ void EventTimerLogic::logMessage(const QString& msg)
 {
     if (logger_ != nullptr){
         logger_->logMsg(msg);
+    }
+}
+
+
+void EventTimerLogic::updateExpired(const Event& e)
+{
+    QDateTime current = QDateTime::currentDateTime();
+    unsigned repeats_left = e.repeats();
+    QDateTime nextTime = QDateTime::fromString(e.timestamp(), Event::TIME_FORMAT);
+
+    // Find next occurence time after current time.
+    while (nextTime < current) {
+        if (repeats_left == 0) break;
+        nextTime = nextTime.addMSecs(e.interval());
+        repeats_left--;
+    }
+
+    if (nextTime < current){
+        // Repeat times have run out.
+        this->removeEvent(e.id());
+    }
+    else {
+        // Update timestamp and repeats.
+        Event updated(e.name(), nextTime.toString(Event::TIME_FORMAT),
+                      e.type(), e.interval(), repeats_left);
+        dbHandler_->updateEvent(e.id(), updated);
     }
 }
 

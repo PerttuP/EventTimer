@@ -10,11 +10,8 @@
 #include <memory>
 #include "eventtimerbuilder.hh"
 
-//#define private public
-#include "eventtimerlogic.hh"
-
-
 Q_DECLARE_METATYPE(EventTimerNS::EventTimerBuilder::Configuration)
+
 
 /**
  * @brief Stub implementation for the Logger interface.
@@ -58,8 +55,6 @@ class EventTimerLogicTest : public QObject
 public:
     EventTimerLogicTest();
 
-//#define public private
-
 private Q_SLOTS:
 
     /**
@@ -98,8 +93,13 @@ private Q_SLOTS:
     void clearAllTest();
     void clearAllTest_data();
 
+    /**
+     * @brief Verify that starting the timer clears
+     *  expired and dynamic events.
+     */
     void startClearsDynamicAndExpiredEventsTest();
     void startClearsDynamicAndExpiredEventsTest_data();
+
 
 private:
 
@@ -154,7 +154,8 @@ void EventTimerLogicTest::validBuilderTest()
 {
     QFETCH(EventTimerNS::EventTimerBuilder::Configuration, conf);
 
-    EventTimerNS::EventTimer* timer = EventTimerNS::EventTimerBuilder::create(conf);
+    using namespace EventTimerNS;
+    std::shared_ptr<EventTimer> timer(EventTimerBuilder::create(conf));
     QVERIFY(timer->isValid());
     QCOMPARE(timer->errorString(), QString());
 }
@@ -171,7 +172,7 @@ void EventTimerLogicTest::addEventTest()
     QFETCH(EventTimerNS::EventTimerBuilder::Configuration, conf);
 
     using namespace EventTimerNS;
-    EventTimer* timer = EventTimerBuilder::create(conf);
+    std::shared_ptr<EventTimer> timer(EventTimerBuilder::create(conf));
     LoggerStub logger;
     HandlerStub handler;
     timer->clearAll();
@@ -211,7 +212,7 @@ void EventTimerLogicTest::removeEvent()
     QFETCH(EventTimerNS::EventTimerBuilder::Configuration, conf);
 
     using namespace EventTimerNS;
-    EventTimer* timer = EventTimerBuilder::create(conf);
+    std::shared_ptr<EventTimer> timer(EventTimerBuilder::create(conf));
     LoggerStub logger;
     HandlerStub handler;
     timer->clearAll();
@@ -259,7 +260,7 @@ void EventTimerLogicTest::clearDynamicTest()
     QFETCH(EventTimerNS::EventTimerBuilder::Configuration, conf);
 
     using namespace EventTimerNS;
-    EventTimer* timer = EventTimerBuilder::create(conf);
+    std::shared_ptr<EventTimer> timer(EventTimerBuilder::create(conf));
     LoggerStub logger;
     HandlerStub handler;
     timer->clearAll();
@@ -313,7 +314,7 @@ void EventTimerLogicTest::clearAllTest()
     QFETCH(EventTimerNS::EventTimerBuilder::Configuration, conf);
 
     using namespace EventTimerNS;
-    EventTimer* timer = EventTimerBuilder::create(conf);
+    std::shared_ptr<EventTimer> timer(EventTimerBuilder::create(conf));
     LoggerStub logger;
     HandlerStub handler;
     timer->clearAll();
@@ -356,7 +357,7 @@ void EventTimerLogicTest::startClearsDynamicAndExpiredEventsTest()
     QFETCH(EventTimerNS::EventTimerBuilder::Configuration, conf);
 
     using namespace EventTimerNS;
-    EventTimer* timer = EventTimerBuilder::create(conf);
+    std::shared_ptr<EventTimer> timer (EventTimerBuilder::create(conf));
     HandlerStub handler;
     timer->clearAll();
     timer->setEventHandler(&handler);
@@ -364,19 +365,25 @@ void EventTimerLogicTest::startClearsDynamicAndExpiredEventsTest()
     // Add some events.
     std::vector<Event> events;
     QDateTime current = QDateTime::currentDateTime();
-    for (int i=0; i<12; ++i){
+    for (int i=0; i<16; ++i){
         Event e;
-        if (i%3 == 0){
+        if (i%4 == 0){
             // Dynamic event.
             e = Event("name"+QString::number(i+1),
                       current.addDays(i+1).toString(Event::TIME_FORMAT),
                       Event::DYNAMIC, 1000*i, i);
         }
-        else if (i%3 == 1) {
+        else if (i%4 == 1) {
             // Expired event
             e = Event("name"+QString::number(i+1),
                       current.addDays(-(i+1)).toString(Event::TIME_FORMAT),
                       Event::STATIC, 1000*i, i);
+        }
+        else if (i%4 == 2){
+            // Expired event that can be updated.
+            e = Event("name" + QString::number(i+1),
+                      current.addDays(-(i+1)).toString(Event::TIME_FORMAT),
+                      Event::STATIC, 24*60*60*1000, i+2);
         }
         else {
             // Static, future event
@@ -397,12 +404,21 @@ void EventTimerLogicTest::startClearsDynamicAndExpiredEventsTest()
     // Verify that expired and dynamic events are gone.
     for (unsigned i=0; i<events.size(); ++i){
         Event e = events.at(i);
-        if (i%3 == 2){
+        if (i%4 == 2){
+            Event actual = timer->getEvent(e.id());
+            QCOMPARE(actual.id(), e.id());
+            QCOMPARE(QDateTime::fromString(actual.timestamp(), Event::TIME_FORMAT),
+                     current.addDays(1));
+            QCOMPARE(actual.type(), Event::STATIC);
+            QCOMPARE(actual.interval(), e.interval());
+            QCOMPARE(actual.repeats(), 0u);
+        }
+        else if (i%4 == 3){
             Event actual = timer->getEvent(e.id());
             this->compareEvents(actual, e);
         }
         else {
-            QVERIFY(timer->getEvent(e.id()).id() == -1);
+            QCOMPARE(timer->getEvent(e.id()).id(), -1);
         }
     }
 }
