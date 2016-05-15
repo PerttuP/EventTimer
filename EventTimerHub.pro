@@ -2,5 +2,6 @@ TEMPLATE = subdirs
 
 SUBDIRS += \
     EventTimer \
-    UnitTests
+    UnitTests \
+    EventTimerExample
 

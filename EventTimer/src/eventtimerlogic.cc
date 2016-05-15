@@ -144,6 +144,7 @@ void EventTimerLogic::start()
     }
 
     updateTimer_.start();
+    logMessage("Timer started.");
 }
 
 
@@ -158,7 +159,7 @@ void EventTimerLogic::checkEvents()
     // Get events from db.
     std::vector<Event> expired = dbHandler_->checkOccured(QDateTime::currentDateTime());
     if (expired.empty()){
-        if (dbHandler_->errorString().isEmpty()){
+        if (!dbHandler_->errorString().isEmpty()){
             this->logMessage("Could not check for events: " + this->errorString());
         }
         return;
