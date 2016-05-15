@@ -21,9 +21,15 @@ class Event
 public:
 
     /**
-     * @brief TIME_FORMAT
+     * @brief Event's timestamp format string: 'yyyy-MM-dd hh:mm:ss:zzz'
+     * (refer to QDateTime documentation).
      */
     static const QString TIME_FORMAT;
+
+    /**
+     * @brief Special value for repeats, indicating that event will be repeated infinite times.
+     */
+    static const unsigned INFINITE_REPEAT;
 
     /**
      * @brief Type of event. Static events are preserved in database between

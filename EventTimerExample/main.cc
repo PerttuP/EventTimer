@@ -59,8 +59,9 @@ int main(int argc, char *argv[])
     conf.dbHostName = QString();
     conf.userName = QString();
     conf.password = QString();
-    conf.refreshRateMsec = 1000;
+    conf.refreshRateMsec = 500;
     std::unique_ptr<EventTimer> timer(EventTimerBuilder::create(conf));
+    timer->clearAll();
     MyHandler handler;
     MyLogger logger;
     timer->setEventHandler(&handler);
@@ -76,12 +77,17 @@ int main(int argc, char *argv[])
              Event::STATIC, 2000, 4);
     timer->addEvent(&e2);
 
+    // Infinite event
+    Event e3("infEvent", now.addSecs(1).toString(Event::TIME_FORMAT),
+             Event::STATIC, 1000, Event::INFINITE_REPEAT);
+    timer->addEvent(&e3);
+
     // Start polling events.
     timer->start();
 
     // Dynamic, single time event:
-    Event e3("quitEvent", now.addSecs(10).toString(Event::TIME_FORMAT), Event::DYNAMIC);
-    timer->addEvent(&e3);
+    Event e4("quitEvent", now.addSecs(10).toString(Event::TIME_FORMAT), Event::DYNAMIC);
+    timer->addEvent(&e4);
 
     return a.exec();
 }
@@ -91,23 +97,35 @@ int main(int argc, char *argv[])
  *
  * Log message: "Event added. Id = 1"
  * Log message: "Event added. Id = 2"
+ * Log message: "Event added. Id = 3"
  * Log message: "Dynamic events cleared successfully."
  * Log message: "Timer started."
- * Log message: "Event added. Id = 3"
+ * Log message: "Event added. Id = 4"
  * 12:00:00 id: 1 name: "fooEvent" repeats left: 9
  * 12:00:00 id: 2 name: "barEvent" repeats left: 4
+ * 12:00:00 id: 3 name: "infEvent" repeats left: 4294967295
  * 12:00:01 id: 1 name: "fooEvent" repeats left: 8
+ * 12:00:01 id: 3 name: "infEvent" repeats left: 4294967295
  * 12:00:02 id: 1 name: "fooEvent" repeats left: 7
  * 12:00:02 id: 2 name: "barEvent" repeats left: 3
+ * 12:00:02 id: 3 name: "infEvent" repeats left: 4294967295
  * 12:00:03 id: 1 name: "fooEvent" repeats left: 6
+ * 12:00:03 id: 3 name: "infEvent" repeats left: 4294967295
  * 12:00:04 id: 1 name: "fooEvent" repeats left: 5
  * 12:00:04 id: 2 name: "barEvent" repeats left: 2
+ * 12:00:04 id: 3 name: "infEvent" repeats left: 4294967295
  * 12:00:05 id: 1 name: "fooEvent" repeats left: 4
+ * 12:00:05 id: 3 name: "infEvent" repeats left: 4294967295
  * 12:00:06 id: 1 name: "fooEvent" repeats left: 3
  * 12:00:06 id: 2 name: "barEvent" repeats left: 1
+ * 12:00:06 id: 3 name: "infEvent" repeats left: 4294967295
  * 12:00:07 id: 1 name: "fooEvent" repeats left: 2
+ * 12:00:07 id: 3 name: "infEvent" repeats left: 4294967295
  * 12:00:08 id: 1 name: "fooEvent" repeats left: 1
  * 12:00:08 id: 2 name: "barEvent" repeats left: 0
+ * 12:00:08 id: 3 name: "infEvent" repeats left: 4294967295
  * 12:00:09 id: 1 name: "fooEvent" repeats left: 0
- * 12:00:09 id: 3 name: "quitEvent" repeats left: 0
+ * 12:00:09 id: 3 name: "infEvent" repeats left: 4294967295
+ * 12:00:09 id: 4 name: "quitEvent" repeats left: 0
+ *
  */

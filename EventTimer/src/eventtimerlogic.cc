@@ -18,8 +18,8 @@ EventTimerLogic::EventTimerLogic(std::unique_ptr<DatabaseHandler> dbHandler,
     logger_(nullptr), updateTimer_()
 {
     Q_ASSERT(dbHandler_ != nullptr);
-    Q_ASSERT(refreshRate > 0)
-    ;
+    Q_ASSERT(refreshRate > 0);
+
     updateTimer_.setInterval(refreshRate);
     connect(&updateTimer_, SIGNAL(timeout()), this, SLOT(checkEvents()) );
 }
@@ -198,7 +198,9 @@ bool EventTimerLogic::updateExpired(const Event& e)
     while (nextTime < current) {
         if (repeats_left == 0) break;
         nextTime = nextTime.addMSecs(e.interval());
-        repeats_left--;
+        if (repeats_left != Event::INFINITE_REPEAT){
+            repeats_left--;
+        }
     }
 
     if (nextTime < current){
