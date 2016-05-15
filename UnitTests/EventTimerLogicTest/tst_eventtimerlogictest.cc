@@ -95,10 +95,16 @@ private Q_SLOTS:
 
     /**
      * @brief Verify that starting the timer clears
-     *  expired and dynamic events.
+     *  expired and dynamic events (using CLEAR policy).
      */
     void startClearsDynamicAndExpiredEventsTest();
     void startClearsDynamicAndExpiredEventsTest_data();
+
+    /**
+     * @brief Test the NOTIFY cleanup policy with the start method.
+     */
+    void startNotifyPolicyTest();
+    void startNotifyPolicyTest_data();
 
 
 private:
@@ -400,6 +406,7 @@ void EventTimerLogicTest::startClearsDynamicAndExpiredEventsTest()
     timer->stop();
     QVERIFY(timer->isValid());
     QVERIFY(timer->errorString().isEmpty());
+    QCOMPARE(handler.events.size(), std::vector<Event>::size_type(0));
 
     // Verify that expired and dynamic events are gone.
     for (unsigned i=0; i<events.size(); ++i){
@@ -425,6 +432,44 @@ void EventTimerLogicTest::startClearsDynamicAndExpiredEventsTest()
 
 
 void EventTimerLogicTest::startClearsDynamicAndExpiredEventsTest_data()
+{
+    invalidBuildetTest_data();
+}
+
+
+void EventTimerLogicTest::startNotifyPolicyTest()
+{
+    QFETCH(EventTimerNS::EventTimerBuilder::Configuration, conf);
+
+    using namespace EventTimerNS;
+    std::shared_ptr<EventTimer> timer (EventTimerBuilder::create(conf));
+    HandlerStub handler;
+    timer->clearAll();
+    timer->setEventHandler(&handler);
+    timer->clearAll();
+
+    // Add static expired
+    Event es("name1", QDateTime::currentDateTime().addDays(-1).toString(Event::TIME_FORMAT),
+            Event::STATIC, 1000, 200);
+    QVERIFY(timer->addEvent(&es) != -1);
+
+    // Add dynamic
+    Event ed("name2", QDateTime::currentDateTime().addDays(-1).toString(Event::TIME_FORMAT),
+             Event::DYNAMIC, 1000, 200);
+    QVERIFY(timer->addEvent(&ed) != -1);
+
+    timer->start(EventTimer::NOTIFY);
+    timer->stop();
+
+    // Both events are gone. Handler is notified on static event.
+    QCOMPARE(handler.events.size(), std::vector<Event>::size_type(1));
+    this->compareEvents(handler.events.at(0), es);
+    QCOMPARE(timer->getEvent(es.id()).id(), -1);
+    QCOMPARE(timer->getEvent(ed.id()).id(), -1);
+}
+
+
+void EventTimerLogicTest::startNotifyPolicyTest_data()
 {
     invalidBuildetTest_data();
 }

@@ -49,7 +49,7 @@ public:
     virtual void setLogger(Logger* logger);
     virtual QString errorString() const;
     virtual bool isValid() const;
-    virtual void start();
+    virtual void start(CleanupPolicy policy);
     virtual void stop();
 
 
@@ -70,7 +70,7 @@ private:
 
     void logMessage(const QString& msg);
 
-    void updateExpired(const Event& e);
+    bool updateExpired(const Event& e);
 };
 
 } // namespace EventTimerNS

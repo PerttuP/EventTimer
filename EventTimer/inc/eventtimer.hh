@@ -26,6 +26,17 @@ class EventTimer
 public:
 
     /**
+     * @brief Defines, what happens to expired static events when
+     *  timer is started. This is an optional parameter for the start method.
+     *  CLEAR-option clears static expired events without norifying the EventHandler.
+     *  NOTIFY-option clears expired events and notifies the EventHandler once for each distinct event.
+     */
+    enum CleanupPolicy
+    {
+        CLEAR, NOTIFY
+    };
+
+    /**
      * @brief Mandatory virtual destructor.
      */
     virtual ~EventTimer() {}
@@ -115,10 +126,11 @@ public:
 
     /**
      * @brief Start or restart scheduling events.
+     * @param policy Declares policy on expired static events.
      * @pre EventTimer is in a valid state. EventHandler has been set.
      * @post Event handler is norified about events occuring from now on.
      */
-    virtual void start() = 0;
+    virtual void start(CleanupPolicy policy = CLEAR) = 0;
 
     /**
      * @brief Stop scheduling events.

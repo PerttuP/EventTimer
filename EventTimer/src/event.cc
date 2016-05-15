@@ -5,6 +5,7 @@
  */
 
 #include "event.hh"
+#include <QDateTime>
 
 namespace EventTimerNS
 {
@@ -29,6 +30,7 @@ Event::Event(const QString& name,
     interval_(interval), repeats_(repeats), type_(type), id_(-1)
 {
     Q_ASSERT(!name.isEmpty());
+    Q_ASSERT(QDateTime::fromString(timestamp, TIME_FORMAT).isValid());
     Q_ASSERT(interval == 0 ? repeats == 0 : true);
 }
 

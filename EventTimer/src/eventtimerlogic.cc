@@ -131,7 +131,7 @@ bool EventTimerLogic::isValid() const
 }
 
 
-void EventTimerLogic::start()
+void EventTimerLogic::start(CleanupPolicy policy)
 {
     Q_ASSERT(eventHandler_ != nullptr);
     Q_ASSERT(this->isValid());
@@ -141,6 +141,9 @@ void EventTimerLogic::start()
     std::vector<Event> events = dbHandler_->checkOccured(QDateTime::currentDateTime());
     for (Event e : events) {
         this->updateExpired(e);
+        if (policy == NOTIFY){
+            eventHandler_->notify(e);
+        }
     }
 
     updateTimer_.start();
@@ -185,7 +188,7 @@ void EventTimerLogic::logMessage(const QString& msg)
 }
 
 
-void EventTimerLogic::updateExpired(const Event& e)
+bool EventTimerLogic::updateExpired(const Event& e)
 {
     QDateTime current = QDateTime::currentDateTime();
     unsigned repeats_left = e.repeats();
@@ -201,6 +204,7 @@ void EventTimerLogic::updateExpired(const Event& e)
     if (nextTime < current){
         // Repeat times have run out.
         this->removeEvent(e.id());
+        return true;
     }
     else {
         // Update timestamp and repeats.
@@ -208,6 +212,7 @@ void EventTimerLogic::updateExpired(const Event& e)
                       e.type(), e.interval(), repeats_left);
         dbHandler_->updateEvent(e.id(), updated);
     }
+    return false;
 }
 
 } // namespace EventTimerNS

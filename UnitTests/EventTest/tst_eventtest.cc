@@ -68,10 +68,10 @@ void EventTest::eventTestCase_data()
     QTest::addColumn<unsigned>("repeats");
     QTest::addColumn<int>("id");
 
-    QTest::newRow("cTest1") << "name1" << "10-05-2016 12:00"        << EventTimerNS::Event::DYNAMIC << 0u    << 0u << 0;
-    QTest::newRow("cTest2") << "name2" << "10-05-2016 12:00:30"     << EventTimerNS::Event::STATIC  << 0u    << 0u << 1;
-    QTest::newRow("cTest3") << "name3" << "10-05-2016 12:00:40:500" << EventTimerNS::Event::DYNAMIC << 4000u << 0u << 2;
-    QTest::newRow("cTest4") << "name4" << "10-05-2016 12:00"        << EventTimerNS::Event::STATIC  << 5000u << 3u << 3;
+    QTest::newRow("cTest1") << "name1" << "2016-05-10 12:00:00:000" << EventTimerNS::Event::DYNAMIC << 0u    << 0u << 0;
+    QTest::newRow("cTest2") << "name2" << "2016-05-10 12:00:30:000" << EventTimerNS::Event::STATIC  << 0u    << 0u << 1;
+    QTest::newRow("cTest3") << "name3" << "2016-05-10 12:00:40:500" << EventTimerNS::Event::DYNAMIC << 4000u << 0u << 2;
+    QTest::newRow("cTest4") << "name4" << "2016-05-10 12:00:00:000" << EventTimerNS::Event::STATIC  << 5000u << 3u << 3;
 }
 
 

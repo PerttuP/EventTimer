@@ -200,7 +200,7 @@ void DatabaseHandlerTest::addEventsTest()
     for (int i=1; i<11; ++i){
         QString name = "name" + QString::number(i);
         QDateTime time = current.addSecs(-i);
-        QString timestamp = time.toString("yyyy-MM-dd hh:mm:ss:zzz");
+        QString timestamp = time.toString(Event::TIME_FORMAT);
         Event::Type type = i%2 == 0 ? Event::STATIC : Event::DYNAMIC;
         Event e(name, timestamp, type, i, i);
 
@@ -255,7 +255,7 @@ void DatabaseHandlerTest::removeEventsTest()
     for (int i=1; i<11; ++i){
         QString name = "name" + QString::number(i);
         QDateTime time = current.addSecs(-i);
-        QString timestamp = time.toString("yyyy-MM-dd hh:mm:ss:zzz");
+        QString timestamp = time.toString(Event::TIME_FORMAT);
         Event::Type type = i%2 == 0 ? Event::STATIC : Event::DYNAMIC;
         Event e(name, timestamp, type, i, i);
 
@@ -301,7 +301,7 @@ void DatabaseHandlerTest::clearDynamicTest()
     for (int i=1; i<11; ++i){
         QString name = "name" + QString::number(i);
         QDateTime time = current.addSecs(-i);
-        QString timestamp = time.toString("yyyy-MM-dd hh:mm:ss:zzz");
+        QString timestamp = time.toString(Event::TIME_FORMAT);
         Event::Type type = i%2 == 0 ? Event::STATIC : Event::DYNAMIC;
         Event e(name, timestamp, type, i, i);
 
@@ -354,7 +354,7 @@ void DatabaseHandlerTest::updateEventTest()
     for (int i=1; i<11; ++i){
         QString name = "name" + QString::number(i);
         QDateTime time = current.addSecs(-i);
-        QString timestamp = time.toString("yyyy-MM-dd hh:mm:ss:zzz");
+        QString timestamp = time.toString(Event::TIME_FORMAT);
         Event::Type type = i%2 == 0 ? Event::STATIC : Event::DYNAMIC;
         Event e(name, timestamp, type, i, i);
 
@@ -367,9 +367,9 @@ void DatabaseHandlerTest::updateEventTest()
     for (Event e : events) {
         Event tmp = handler->getEvent(e.id());
         QVERIFY(tmp.id() != -1);
-        QDateTime time = QDateTime::fromString(e.timestamp(), "yyyy-MM-dd hh:mm:ss:zzz");
+        QDateTime time = QDateTime::fromString(e.timestamp(), Event::TIME_FORMAT);
         Event replacement(e.name() + "_update",
-                          time.addDays(1).toString("yyyy-MM-dd hh:mm:ss:zzz"),
+                          time.addDays(1).toString(Event::TIME_FORMAT),
                           e.type() == Event::DYNAMIC ? Event::STATIC : Event::DYNAMIC,
                           e.interval() + 1000, e.repeats() + 1);
 
@@ -381,7 +381,7 @@ void DatabaseHandlerTest::updateEventTest()
         QCOMPARE(tmp.repeats(), e.repeats() + 1u);
         QVERIFY(tmp.type() != e.type());
         QCOMPARE(tmp.timestamp(),
-                 QDateTime::fromString(e.timestamp(), "yyyy-MM-dd hh:mm:ss:zzz").addDays(1).toString("yyyy-MM-dd hh:mm:ss:zzz"));
+                 QDateTime::fromString(e.timestamp(), Event::TIME_FORMAT).addDays(1).toString(Event::TIME_FORMAT));
     }
     QVERIFY(handler->clearAll());
 }
@@ -413,7 +413,7 @@ void DatabaseHandlerTest::checkOccuredTest()
         QString name = "name" + QString::number(i);
         int diff = i%2==0 ? -1000*i : 1000*i;
         QDateTime time = current.addSecs(diff);
-        QString timestamp = time.toString("yyyy-MM-dd hh:mm:ss:zzz");
+        QString timestamp = time.toString(Event::TIME_FORMAT);
         Event::Type type = i%2 == 0 ? Event::STATIC : Event::DYNAMIC;
         Event e(name, timestamp, type, i, i);
 
@@ -426,7 +426,7 @@ void DatabaseHandlerTest::checkOccuredTest()
     QCOMPARE(occured.size(), std::vector<Event>::size_type(5));
     for (Event e : occured){
         QVERIFY(e.id()%2 == 0);
-        QVERIFY(QDateTime::fromString(e.timestamp(), "yyyy-MM-dd hh:mm:ss:zzz") < current);
+        QVERIFY(QDateTime::fromString(e.timestamp(), Event::TIME_FORMAT) < current);
         Event original = events.at(e.id()-1);
         this->compareEvents(e, original);
     }
@@ -459,7 +459,7 @@ void DatabaseHandlerTest::addRemoveTest()
         QString name = "name" + QString::number(i);
         int diff = i%2==0 ? -1000*i : 1000*i;
         QDateTime time = current.addSecs(diff);
-        QString timestamp = time.toString("yyyy-MM-dd hh:mm:ss:zzz");
+        QString timestamp = time.toString(Event::TIME_FORMAT);
         Event::Type type = i%2 == 0 ? Event::STATIC : Event::DYNAMIC;
         Event e(name, timestamp, type, i, i);
 
@@ -504,7 +504,7 @@ void DatabaseHandlerTest::addUpdateTest()
         QString name = "name" + QString::number(i);
         int diff = i%2==0 ? -1000*i : 1000*i;
         QDateTime time = current.addSecs(diff);
-        QString timestamp = time.toString("yyyy-MM-dd hh:mm:ss:zzz");
+        QString timestamp = time.toString(Event::TIME_FORMAT);
         Event::Type type = i%2 == 0 ? Event::STATIC : Event::DYNAMIC;
         Event e(name, timestamp, type, i, i);
 
@@ -516,8 +516,8 @@ void DatabaseHandlerTest::addUpdateTest()
         this->compareEvents(tmp, e);
 
         // Update event.
-        QDateTime updated_time = QDateTime::fromString(e.timestamp(), "yyyy-MM-dd hh:mm:ss:zzz").addDays(i);
-        Event updated(e.name()+"_upd", updated_time.toString("yyyy-MM-dd hh:mm:ss:zzz"),
+        QDateTime updated_time = QDateTime::fromString(e.timestamp(), Event::TIME_FORMAT).addDays(i);
+        Event updated(e.name()+"_upd", updated_time.toString(Event::TIME_FORMAT),
                       e.type() == Event::DYNAMIC ? Event::STATIC : Event::STATIC,
                       e.interval() + i*1000, e.repeats()+i);
         updated.setId(id);
@@ -557,7 +557,7 @@ void DatabaseHandlerTest::TwoHandlersDifferentTablesTest()
     for (int j = 1; j<11; ++j)
     {
         for (unsigned i = 0; i<handlers.size(); ++i) {
-            Event e("name"+QString::number(10*i+j), current.addDays(10*i+1).toString("yyyy-MM-dd hh:mm:ss:zzz"),
+            Event e("name"+QString::number(10*i+j), current.addDays(10*i+1).toString(Event::TIME_FORMAT),
                     i % 2 == 0 ? Event::STATIC : Event::DYNAMIC, (i*10+j)*1000, i*10+j);
 
             int id = handlers.at(i)->addEvent(&e);
