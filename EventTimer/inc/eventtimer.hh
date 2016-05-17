@@ -45,32 +45,42 @@ public:
      * @brief Time new event.
      * @param e Event to be timed.
      * @return Event id assigned to the event. If adding event fails, returns -1.
-     * @pre Event != nullptr. Event id is unassigned.
-     * @post Times the event and assigns it's id. If adding event fails,
-     *  returns -1 and does not modify event. Error message is available calling errorString().
+     * @pre Event != nullptr. Event is valid. Event id is unassigned.
+     * @post Times the event and assigns it's id.
+     *  If adding event fails, returns Event::UNASSIGNED_ID and does not modify event.
+     *  Error message is available calling errorString().
      */
-    virtual int addEvent(Event* e) = 0;
+    virtual unsigned addEvent(Event* e) = 0;
 
     /**
      * @brief Cancel timed event.
      * @param eventId Id of event to be cancelled.
      * @return true, if event was cancelled successfully.
-     * @pre eventId > 0.
+     * @pre -
      * @post Removes event or returns false and does not modify schedules.
      *  In case of failure, error message is available calling errorString().
      */
-    virtual bool removeEvent(int eventId) = 0;
+    virtual bool removeEvent(unsigned eventId) = 0;
 
     /**
      * @brief Get event matching to the id.
      * @param eventId Event id.
      * @return Corresponding event with its current values
      *  (may have been updated since adding the event).
-     *  If getting event fails, returns event with id == -1.
-     * @pre eventID > 0.
+     *  If getting event fails, returns event with unassigned id.
+     * @pre -
      * @post If getting event fails, more info is available calling errorString().
      */
-    virtual Event getEvent(int eventId) = 0;
+    virtual Event getEvent(unsigned eventId) = 0;
+
+    /**
+     * @brief Get list of next occuring events.
+     * @param amount Number of events included in the list.
+     * @return Vector of next occuring events. Vector has up to 'amount' elements.
+     *  All events are valid and represent existing, stored events.
+     * @pre amount != 0.
+     */
+    virtual std::vector<Event> nextEvents(unsigned amount) = 0;
 
     /**
      * @brief Remove all dynamic events from schedule.

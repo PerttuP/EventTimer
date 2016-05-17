@@ -85,7 +85,7 @@ public:
      * @post event is added or database is not changed.
      *  In case of error, returns -1 and updates the error string.
      */
-    int addEvent(Event* e);
+    unsigned addEvent(Event* e);
 
     /**
      * @brief Remove event from the database.
@@ -95,7 +95,7 @@ public:
      * @post Event is removed, or database is not modified. In case of error,
      * returns false and updates error string.
      */
-    bool removeEvent(int eventId);
+    bool removeEvent(unsigned eventId);
 
     /**
      * @brief Remove all dynamic events from the database.
@@ -132,7 +132,7 @@ public:
      * @post Updates the event or does not modify the database.
      *  In case of error returns false and updates the error string.
      */
-    bool updateEvent(int eventID, const Event& e);
+    bool updateEvent(unsigned eventID, const Event& e);
 
     /**
      * @brief Get event matching the id number.
@@ -141,7 +141,7 @@ public:
      *  returns event with id = -1. Extra information is available calling errorString().
      * @pre id > 0. DatabaseHandler is in a valid state.
      */
-    Event getEvent(int eventId);
+    Event getEvent(unsigned eventId);
 
 
 private:

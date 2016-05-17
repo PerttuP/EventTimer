@@ -34,7 +34,7 @@ public:
 class MyHandler : public EventHandler
 {
 public:
-    void notify(Event event)
+    void notify(const Event& event)
     {
         qDebug() << QDateTime::currentDateTime().toString("hh:mm:ss").toStdString().c_str()
                  << "id:" << event.id() << "name:" << event.name()
@@ -121,9 +121,12 @@ int main(int argc, char *argv[])
  * 12:00:06 id: 3 name: "infEvent" repeats left: 4294967295
  * 12:00:07 id: 1 name: "fooEvent" repeats left: 2
  * 12:00:07 id: 3 name: "infEvent" repeats left: 4294967295
+ * Log message: "Event removed (id = 2)."
  * 12:00:08 id: 1 name: "fooEvent" repeats left: 1
  * 12:00:08 id: 2 name: "barEvent" repeats left: 0
  * 12:00:08 id: 3 name: "infEvent" repeats left: 4294967295
+ * Log message: "Event removed (id = 1)."
+ * Log message: "Event removed (id = 4)."
  * 12:00:09 id: 1 name: "fooEvent" repeats left: 0
  * 12:00:09 id: 3 name: "infEvent" repeats left: 4294967295
  * 12:00:09 id: 4 name: "quitEvent" repeats left: 0

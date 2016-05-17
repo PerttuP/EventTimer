@@ -38,7 +38,7 @@ public:
 
     std::vector<EventTimerNS::Event> events;
 
-    void notify(EventTimerNS::Event event)
+    void notify(const EventTimerNS::Event& event)
     {
         events.push_back(event);
     }
@@ -187,9 +187,9 @@ void EventTimerLogicTest::addEventTest()
 
     // Add event
     Event e("name", "2000-01-01 00:00:00:000", Event::STATIC, 1000, 10);
-    int id = timer->addEvent(&e);
+    unsigned id = timer->addEvent(&e);
     QCOMPARE(id, e.id());
-    QVERIFY(id != -1);
+    QVERIFY(id != Event::UNASSIGNED_ID);
     QCOMPARE(logger.messages.size(), QStringList::size_type(1));
     qDebug() << logger.messages.at(0);
     QCOMPARE(handler.events.size(), std::vector<Event>::size_type(0));
@@ -198,7 +198,7 @@ void EventTimerLogicTest::addEventTest()
 
     // Verify addition
     Event e2 = timer->getEvent(e.id());
-    QVERIFY(e2.id() != -1);
+    QVERIFY(e2.id() != Event::UNASSIGNED_ID);
     QVERIFY(timer->isValid());
     QVERIFY(timer->errorString().isEmpty());
     QCOMPARE(logger.messages.size(), QStringList::size_type(1));
@@ -226,7 +226,7 @@ void EventTimerLogicTest::removeEvent()
     timer->setEventHandler(&handler);
     Event e("name", "2000-01-01 00:00:00:000", Event::STATIC, 1000, 10);
     timer->addEvent(&e);
-    QVERIFY(e.id() != -1);
+    QVERIFY(e.id() != Event::UNASSIGNED_ID);
 
     // Remove existing event.
     QVERIFY(timer->removeEvent(e.id()));
@@ -238,7 +238,7 @@ void EventTimerLogicTest::removeEvent()
 
     // Verify removal
     Event tmp = timer->getEvent(e.id());
-    QCOMPARE(tmp.id(), -1);
+    QCOMPARE(tmp.id(), Event::UNASSIGNED_ID);
     QVERIFY(timer->isValid());
     QVERIFY(timer->errorString().isEmpty());
     QCOMPARE(logger.messages.size(), QStringList::size_type(3));
@@ -281,7 +281,7 @@ void EventTimerLogicTest::clearDynamicTest()
                 currentTime.addDays(i+1).toString(Event::TIME_FORMAT),
                 i%2 == 0 ? Event::DYNAMIC : Event::STATIC,
                 1000*(1+i), i+1);
-        QVERIFY(timer->addEvent(&e) != -1);
+        QVERIFY(timer->addEvent(&e) != Event::UNASSIGNED_ID);
         events.push_back(e);
     }
 
@@ -298,7 +298,7 @@ void EventTimerLogicTest::clearDynamicTest()
             this->compareEvents(e2, e);
         }
         else {
-            QCOMPARE(e2.id(), -1);
+            QCOMPARE(e2.id(), Event::UNASSIGNED_ID);
         }
     }
     QCOMPARE(logger.messages.size(), QStringList::size_type(16));
@@ -334,7 +334,7 @@ void EventTimerLogicTest::clearAllTest()
                 currentTime.addDays(i+1).toString(Event::TIME_FORMAT),
                 i%2 == 0 ? Event::DYNAMIC : Event::STATIC,
                 1000*(1+i), i+1);
-        QVERIFY(timer->addEvent(&e) != -1);
+        QVERIFY(timer->addEvent(&e) != Event::UNASSIGNED_ID);
         events.push_back(e);
     }
 
@@ -347,7 +347,7 @@ void EventTimerLogicTest::clearAllTest()
     QVERIFY(timer->errorString().isEmpty());
 
     for (Event e : events){
-        QCOMPARE(timer->getEvent(e.id()).id(), -1);
+        QCOMPARE(timer->getEvent(e.id()).id(), Event::UNASSIGNED_ID);
     }
 }
 
@@ -397,7 +397,7 @@ void EventTimerLogicTest::startClearsDynamicAndExpiredEventsTest()
                       current.addDays(i+1).toString(Event::TIME_FORMAT),
                       Event::STATIC, 1000*i, i);
         }
-        QVERIFY (timer->addEvent(&e) != -1);
+        QVERIFY (timer->addEvent(&e) != Event::UNASSIGNED_ID);
         events.push_back(e);
     }
 
@@ -425,7 +425,7 @@ void EventTimerLogicTest::startClearsDynamicAndExpiredEventsTest()
             this->compareEvents(actual, e);
         }
         else {
-            QCOMPARE(timer->getEvent(e.id()).id(), -1);
+            QCOMPARE(timer->getEvent(e.id()).id(), Event::UNASSIGNED_ID);
         }
     }
 }
@@ -451,12 +451,12 @@ void EventTimerLogicTest::startNotifyPolicyTest()
     // Add static expired
     Event es("name1", QDateTime::currentDateTime().addDays(-1).toString(Event::TIME_FORMAT),
             Event::STATIC, 1000, 200);
-    QVERIFY(timer->addEvent(&es) != -1);
+    QVERIFY(timer->addEvent(&es) != Event::UNASSIGNED_ID);
 
     // Add dynamic
     Event ed("name2", QDateTime::currentDateTime().addDays(-1).toString(Event::TIME_FORMAT),
              Event::DYNAMIC, 1000, 200);
-    QVERIFY(timer->addEvent(&ed) != -1);
+    QVERIFY(timer->addEvent(&ed) != Event::UNASSIGNED_ID);
 
     timer->start(EventTimer::NOTIFY);
     timer->stop();
@@ -464,8 +464,8 @@ void EventTimerLogicTest::startNotifyPolicyTest()
     // Both events are gone. Handler is notified on static event.
     QCOMPARE(handler.events.size(), std::vector<Event>::size_type(1));
     this->compareEvents(handler.events.at(0), es);
-    QCOMPARE(timer->getEvent(es.id()).id(), -1);
-    QCOMPARE(timer->getEvent(ed.id()).id(), -1);
+    QCOMPARE(timer->getEvent(es.id()).id(), Event::UNASSIGNED_ID);
+    QCOMPARE(timer->getEvent(ed.id()).id(), Event::UNASSIGNED_ID);
 }
 
 

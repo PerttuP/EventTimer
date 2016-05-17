@@ -321,7 +321,7 @@ void DatabaseHandlerBenchmark::addThousandEvents()
 
     // Check that events were added
     for (Event e : events_){
-        QVERIFY(e.id() != -1);
+        QVERIFY(e.id() != Event::UNASSIGNED_ID);
     }
 }
 
@@ -402,7 +402,7 @@ void DatabaseHandlerBenchmark::getThousandEvents()
 
     // Verify that all events are right.
     for (Event e : events_) {
-        QVERIFY(e.id() != -1);
+        QVERIFY(e.id() != Event::UNASSIGNED_ID);
     }
 }
 
@@ -436,7 +436,7 @@ void DatabaseHandlerBenchmark::get500ExpiredEvents()
     // Check that expired events are right.
     QCOMPARE(expired.size(), std::vector<Event>::size_type(500));
     for (Event e : expired){
-        QVERIFY(e.id() != -1);
+        QVERIFY(e.id() != Event::UNASSIGNED_ID);
         QVERIFY(e.timestamp() < currentTime_.toString(Event::TIME_FORMAT));
         Event original = events_[e.id()-1];
         QCOMPARE(e.id(), original.id());
@@ -476,7 +476,7 @@ void DatabaseHandlerBenchmark::clear500DynamicEvents()
     // Verify that dynamic events were removed
     for (Event e : events_) {
         if (e.type() == Event::DYNAMIC){
-            QCOMPARE(handler->getEvent(e.id()).id(), -1);
+            QCOMPARE(handler->getEvent(e.id()).id(), Event::UNASSIGNED_ID);
         }
         else {
             QCOMPARE(handler->getEvent(e.id()).id(), e.id());
@@ -511,7 +511,7 @@ void DatabaseHandlerBenchmark::clear500Events()
 
     // Verify that all events are removed
     for (Event e : events_) {
-        QCOMPARE(handler->getEvent(e.id()).id(), -1);
+        QCOMPARE(handler->getEvent(e.id()).id(), Event::UNASSIGNED_ID);
     }
 }
 
@@ -538,10 +538,10 @@ void DatabaseHandlerBenchmark::removeThousandEvents()
 
     // Re-populate database.
     for (unsigned i=0; i<events_.size(); ++i){
-        QVERIFY(handler->getEvent(events_[i].id()).id() == -1);
+        QVERIFY(handler->getEvent(events_[i].id()).id() == Event::UNASSIGNED_ID);
         // Note: violates precondition. Works with release build only.
         // Violation has no undesired side effects in this case.
-        QVERIFY(handler->addEvent(&(events_[i])) != -1);
+        QVERIFY(handler->addEvent(&(events_[i])) != Event::UNASSIGNED_ID);
     }
 
     QBENCHMARK_ONCE {

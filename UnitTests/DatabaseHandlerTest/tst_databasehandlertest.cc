@@ -170,7 +170,7 @@ void DatabaseHandlerTest::getEventNotFound()
     // Clear db.
     QVERIFY( handler->clearAll() );
     Event e = handler->getEvent(1);
-    QCOMPARE(e.id(), -1);
+    QCOMPARE(e.id(), Event::UNASSIGNED_ID);
 }
 
 
@@ -197,14 +197,14 @@ void DatabaseHandlerTest::addEventsTest()
     // Populate database.
     QDateTime current = QDateTime::currentDateTime();
     std::vector<Event> events;
-    for (int i=1; i<11; ++i){
+    for (unsigned i=1; i<11; ++i){
         QString name = "name" + QString::number(i);
         QDateTime time = current.addSecs(-i);
         QString timestamp = time.toString(Event::TIME_FORMAT);
         Event::Type type = i%2 == 0 ? Event::STATIC : Event::DYNAMIC;
         Event e(name, timestamp, type, i, i);
 
-        int id = handler->addEvent(&e);
+        unsigned id = handler->addEvent(&e);
         QCOMPARE(id, i);
         QCOMPARE(e.id(), i);
         events.push_back(e);
@@ -259,8 +259,8 @@ void DatabaseHandlerTest::removeEventsTest()
         Event::Type type = i%2 == 0 ? Event::STATIC : Event::DYNAMIC;
         Event e(name, timestamp, type, i, i);
 
-        int id = handler->addEvent(&e);
-        QVERIFY(id != -1);
+        unsigned id = handler->addEvent(&e);
+        QVERIFY(id != Event::UNASSIGNED_ID);
         events.push_back(e);
     }
 
@@ -268,7 +268,7 @@ void DatabaseHandlerTest::removeEventsTest()
     for (Event e : events){
         QVERIFY( handler->removeEvent(e.id()) );
         Event tmp = handler->getEvent(e.id());
-        QCOMPARE(tmp.id(), -1);
+        QCOMPARE(tmp.id(), Event::UNASSIGNED_ID);
         QVERIFY(handler->errorString().isEmpty());
     }
     QVERIFY(handler->clearAll());
@@ -316,7 +316,7 @@ void DatabaseHandlerTest::clearDynamicTest()
     for (Event e : events) {
         Event tmp = handler->getEvent(e.id());
         if (e.type() == Event::DYNAMIC) {
-            QCOMPARE(tmp.id(), -1);
+            QCOMPARE(tmp.id(), Event::UNASSIGNED_ID);
             QVERIFY(handler->errorString().isEmpty());
             QVERIFY(handler->isValid());
         }
@@ -366,7 +366,7 @@ void DatabaseHandlerTest::updateEventTest()
     // Update events
     for (Event e : events) {
         Event tmp = handler->getEvent(e.id());
-        QVERIFY(tmp.id() != -1);
+        QVERIFY(tmp.id() != Event::UNASSIGNED_ID);
         QDateTime time = QDateTime::fromString(e.timestamp(), Event::TIME_FORMAT);
         Event replacement(e.name() + "_update",
                           time.addDays(1).toString(Event::TIME_FORMAT),
@@ -464,8 +464,8 @@ void DatabaseHandlerTest::addRemoveTest()
         Event e(name, timestamp, type, i, i);
 
         // Add event
-        int id = handler->addEvent(&e);
-        QCOMPARE(id, 1);
+        unsigned id = handler->addEvent(&e);
+        QVERIFY(id != Event::UNASSIGNED_ID);
         QCOMPARE(e.id(), id);
         Event tmp = handler->getEvent(id);
         this->compareEvents(tmp, e);
@@ -473,7 +473,7 @@ void DatabaseHandlerTest::addRemoveTest()
         // Remove event.
         QVERIFY(handler->removeEvent(id));
         tmp = handler->getEvent(id);
-        QCOMPARE(tmp.id(), -1);
+        QCOMPARE(tmp.id(), Event::UNASSIGNED_ID);
     }
 
 }
@@ -500,7 +500,7 @@ void DatabaseHandlerTest::addUpdateTest()
 
     // AddEvents and update imediately.
     QDateTime current = QDateTime::currentDateTime();
-    for (int i=1; i<11; ++i){
+    for (unsigned i=1; i<11; ++i){
         QString name = "name" + QString::number(i);
         int diff = i%2==0 ? -1000*i : 1000*i;
         QDateTime time = current.addSecs(diff);
@@ -509,8 +509,8 @@ void DatabaseHandlerTest::addUpdateTest()
         Event e(name, timestamp, type, i, i);
 
         // Add event
-        int id = handler->addEvent(&e);
-        QCOMPARE(id, i);
+        unsigned id = handler->addEvent(&e);
+        QVERIFY(id != Event::UNASSIGNED_ID);
         QCOMPARE(e.id(), id);
         Event tmp = handler->getEvent(id);
         this->compareEvents(tmp, e);
@@ -560,8 +560,8 @@ void DatabaseHandlerTest::TwoHandlersDifferentTablesTest()
             Event e("name"+QString::number(10*i+j), current.addDays(10*i+1).toString(Event::TIME_FORMAT),
                     i % 2 == 0 ? Event::STATIC : Event::DYNAMIC, (i*10+j)*1000, i*10+j);
 
-            int id = handlers.at(i)->addEvent(&e);
-            QVERIFY(id != -1);
+            unsigned id = handlers.at(i)->addEvent(&e);
+            QVERIFY(id != Event::UNASSIGNED_ID);
             QCOMPARE(id, e.id());
             QVERIFY(handlers.at(i)->isValid());
             events[10*i+j-1] = e;
@@ -593,9 +593,9 @@ void DatabaseHandlerTest::TwoHandlersDifferentTablesTest()
     // Verify that all events are gone.
     for (Event e : events) {
         Event tmp = handler1->getEvent(e.id());
-        QCOMPARE(tmp.id(), -1);
+        QCOMPARE(tmp.id(), Event::UNASSIGNED_ID);
         tmp = handler2->getEvent(e.id());
-        QCOMPARE(tmp.id(), -1);
+        QCOMPARE(tmp.id(), Event::UNASSIGNED_ID);
     }
 }
 

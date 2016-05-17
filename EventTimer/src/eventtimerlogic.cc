@@ -30,13 +30,14 @@ EventTimerLogic::~EventTimerLogic()
 }
 
 
-int EventTimerLogic::addEvent(Event* e)
+unsigned EventTimerLogic::addEvent(Event* e)
 {
     Q_ASSERT(e != nullptr);
-    Q_ASSERT(e->id() == -1);
+    Q_ASSERT(e->isValid());
+    Q_ASSERT(e->id() == Event::UNASSIGNED_ID);
 
-    int id = dbHandler_->addEvent(e);
-    if (id == -1){
+    unsigned id = dbHandler_->addEvent(e);
+    if (id == Event::UNASSIGNED_ID){
         this->logMessage("Could not add event: " + this->errorString());
     } else {
         this->logMessage("Event added. Id = " + QString::number(id));
@@ -45,10 +46,8 @@ int EventTimerLogic::addEvent(Event* e)
 }
 
 
-bool EventTimerLogic::removeEvent(int eventId)
+bool EventTimerLogic::removeEvent(unsigned eventId)
 {
-    Q_ASSERT(eventId > 0);
-
     bool rv = dbHandler_->removeEvent(eventId);
     if (rv) {
         this->logMessage("Event removed (id = " + QString::number(eventId) + ").");
@@ -61,12 +60,10 @@ bool EventTimerLogic::removeEvent(int eventId)
 }
 
 
-Event EventTimerLogic::getEvent(int eventId)
+Event EventTimerLogic::getEvent(unsigned eventId)
 {
-    Q_ASSERT(eventId > 0);
-
     Event e = dbHandler_->getEvent(eventId);
-    if (e.id() == -1) {
+    if (e.id() == Event::UNASSIGNED_ID) {
         if (this->errorString().isEmpty()){
             logMessage("Could not get event (id=" +
                        QString::number(eventId) + "): " +
@@ -79,6 +76,12 @@ Event EventTimerLogic::getEvent(int eventId)
         }
     }
     return e;
+}
+
+
+std::vector<Event> EventTimerLogic::nextEvents(unsigned amount)
+{
+    return std::vector<Event>(amount);
 }
 
 

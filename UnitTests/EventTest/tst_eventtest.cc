@@ -26,8 +26,14 @@ private Q_SLOTS:
     /**
      * @brief Test Event constructor and setting id.
      */
-    void eventTestCase();
-    void eventTestCase_data();
+    void constructorTest();
+    void constructorTest_data();
+
+    /**
+     * @brief Test the isValid-method and setter-methods.
+     */
+    void isValidTest();
+    void isValidTest_data();
 };
 
 EventTest::EventTest()
@@ -35,14 +41,14 @@ EventTest::EventTest()
 }
 
 
-void EventTest::eventTestCase()
+void EventTest::constructorTest()
 {
     QFETCH(QString, name);
     QFETCH(QString, timestamp);
     QFETCH(EventTimerNS::Event::Type, type);
     QFETCH(unsigned, interval);
     QFETCH(unsigned, repeats);
-    QFETCH(int, id);
+    QFETCH(unsigned, id);
 
     // Test contructor
     EventTimerNS::Event e(name, timestamp, type, interval, repeats);
@@ -51,7 +57,8 @@ void EventTest::eventTestCase()
     QCOMPARE(e.type(), type);
     QCOMPARE(e.interval(), interval);
     QCOMPARE(e.repeats(), repeats);
-    QCOMPARE(e.id(), -1);
+    QCOMPARE(e.id(), EventTimerNS::Event::UNASSIGNED_ID);
+    QVERIFY(e.isValid());
 
     // Test setting id.
     e.setId(id);
@@ -59,19 +66,75 @@ void EventTest::eventTestCase()
 }
 
 
-void EventTest::eventTestCase_data()
+void EventTest::constructorTest_data()
 {
     QTest::addColumn<QString>("name");
     QTest::addColumn<QString>("timestamp");
     QTest::addColumn<EventTimerNS::Event::Type>("type");
     QTest::addColumn<unsigned>("interval");
     QTest::addColumn<unsigned>("repeats");
-    QTest::addColumn<int>("id");
+    QTest::addColumn<unsigned>("id");
 
-    QTest::newRow("cTest1") << "name1" << "2016-05-10 12:00:00:000" << EventTimerNS::Event::DYNAMIC << 0u    << 0u << 0;
-    QTest::newRow("cTest2") << "name2" << "2016-05-10 12:00:30:000" << EventTimerNS::Event::STATIC  << 0u    << 0u << 1;
-    QTest::newRow("cTest3") << "name3" << "2016-05-10 12:00:40:500" << EventTimerNS::Event::DYNAMIC << 4000u << 0u << 2;
-    QTest::newRow("cTest4") << "name4" << "2016-05-10 12:00:00:000" << EventTimerNS::Event::STATIC  << 5000u << 3u << 3;
+    QTest::newRow("cTest1") << "name1" << "2016-05-10 12:00:00:000" << EventTimerNS::Event::DYNAMIC << 0u    << 0u << 0u;
+    QTest::newRow("cTest2") << "name2" << "2016-05-10 12:00:30:000" << EventTimerNS::Event::STATIC  << 0u    << 0u << 1u;
+    QTest::newRow("cTest3") << "name3" << "2016-05-10 12:00:40:500" << EventTimerNS::Event::DYNAMIC << 4000u << 0u << 2u;
+    QTest::newRow("cTest4") << "name4" << "2016-05-10 12:00:00:000" << EventTimerNS::Event::STATIC  << 5000u << 3u << 3u;
+}
+
+
+void EventTest::isValidTest()
+{
+    QFETCH(QString, name);
+    QFETCH(QString, timestamp);
+    QFETCH(EventTimerNS::Event::Type, type);
+    QFETCH(unsigned, interval);
+    QFETCH(unsigned, repeats);
+    QFETCH(bool, isValid);
+
+    EventTimerNS::Event e;
+    QVERIFY(!e.isValid());
+
+    e.setName(name);
+    QCOMPARE(e.name(), name);
+    QVERIFY(!e.isValid());
+
+    e.setTimestamp(timestamp);
+    QCOMPARE(e.timestamp(), timestamp);
+
+    e.setType(type);
+    QCOMPARE(e.type(), type);
+
+    e.setInterval(interval);
+    QCOMPARE(e.interval(), interval);
+
+    e.setRepeats(repeats);
+    QCOMPARE(e.repeats(), repeats);
+
+    QCOMPARE(e.isValid(), isValid);
+}
+
+
+void EventTest::isValidTest_data()
+{
+    QTest::addColumn<QString>("name");
+    QTest::addColumn<QString>("timestamp");
+    QTest::addColumn<EventTimerNS::Event::Type>("type");
+    QTest::addColumn<unsigned>("interval");
+    QTest::addColumn<unsigned>("repeats");
+    QTest::addColumn<bool>("isValid");
+
+    QTest::newRow("static single time")      << "name1" << "2016-05-17 06:10:10:100" << EventTimerNS::Event::STATIC  << 0u     << 0u << true;
+    QTest::newRow("static 1 remaining")      << "name2" << "2016-05-16 12:20:20:200" << EventTimerNS::Event::STATIC  << 1000u  << 0u << true;
+    QTest::newRow("static 5 remaining")      << "name3" << "2016-05-15 18:30:30:300" << EventTimerNS::Event::STATIC  << 2000u  << 4u << true;
+
+    QTest::newRow("dynamic single time")     << "name4" << "2016-05-14 00:01:01:010" << EventTimerNS::Event::DYNAMIC << 0u     << 0u << true;
+    QTest::newRow("dynamic 1 remaining")     << "name5" << "2016-05-13 09:02:02:020" << EventTimerNS::Event::DYNAMIC << 300u   << 0u << true;
+    QTest::newRow("dynamic 5 remaining")     << "name6" << "2016-05-12 15:03:03:030" << EventTimerNS::Event::DYNAMIC << 40000u << 4u << true;
+
+    QTest::newRow("empty name")              << ""      << "2016-05-17 06:10:10:100" << EventTimerNS::Event::STATIC  << 0u     << 0u << false;
+    QTest::newRow("wrong time format")       << "name7" << "2016-05-17 06:00:00"     << EventTimerNS::Event::DYNAMIC << 0u     << 0u << false;
+    QTest::newRow("invalid timestamp")       << "name8" << "2016-17-05 06:00:00:000" << EventTimerNS::Event::STATIC  << 0u     << 0u << false;
+    QTest::newRow("interval 0, repeats not") << "name9" << "2016-05-17 06:10:10:100" << EventTimerNS::Event::DYNAMIC << 0u     << 4u << false;
 }
 
 

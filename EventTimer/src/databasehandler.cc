@@ -45,7 +45,7 @@ QString DatabaseHandler::errorString() const
 }
 
 
-int DatabaseHandler::addEvent(Event* e)
+unsigned DatabaseHandler::addEvent(Event* e)
 {
     Q_ASSERT(e != nullptr);
     Q_ASSERT(e->id() == -1);
@@ -73,7 +73,7 @@ int DatabaseHandler::addEvent(Event* e)
 }
 
 
-bool DatabaseHandler::removeEvent(int eventId)
+bool DatabaseHandler::removeEvent(unsigned eventId)
 {
     Q_ASSERT(this->isValid());
 
@@ -142,7 +142,7 @@ std::vector<Event> DatabaseHandler::checkOccured(const QDateTime& time)
 }
 
 
-bool DatabaseHandler::updateEvent(int eventID, const Event& e)
+bool DatabaseHandler::updateEvent(unsigned eventID, const Event& e)
 {
     Q_ASSERT(this->isValid());
 
@@ -163,9 +163,8 @@ bool DatabaseHandler::updateEvent(int eventID, const Event& e)
 }
 
 
-Event DatabaseHandler::getEvent(int eventId)
+Event DatabaseHandler::getEvent(unsigned eventId)
 {
-    Q_ASSERT(eventId > 0);
     Q_ASSERT(this->isValid());
 
     QSqlQuery q("SELECT id, name, timestamp, interval, repeats, static "

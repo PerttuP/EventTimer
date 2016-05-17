@@ -40,9 +40,10 @@ public:
     virtual ~EventTimerLogic();
 
     // EventTimer interface
-    virtual int addEvent(Event* e);
-    virtual bool removeEvent(int eventId);
-    virtual Event getEvent(int eventId);
+    virtual unsigned addEvent(Event* e);
+    virtual bool removeEvent(unsigned eventId);
+    virtual Event getEvent(unsigned eventId);
+    virtual std::vector<Event> nextEvents(unsigned amount);
     virtual bool clearDynamic();
     virtual bool clearAll();
     virtual void setEventHandler(EventHandler* handler);
