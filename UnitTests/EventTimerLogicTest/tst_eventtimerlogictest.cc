@@ -82,6 +82,12 @@ private Q_SLOTS:
     void removeEvent_data();
 
     /**
+     * @brief Test getting next events.
+     */
+    void nextEventsTest();
+    void nextEventsTest_data();
+
+    /**
      * @brief Test clearing dynamic events.
      */
     void clearDynamicTest();
@@ -256,6 +262,50 @@ void EventTimerLogicTest::removeEvent()
 
 
 void EventTimerLogicTest::removeEvent_data()
+{
+    invalidBuildetTest_data();
+}
+
+
+void EventTimerLogicTest::nextEventsTest()
+{
+    QFETCH(EventTimerNS::EventTimerBuilder::Configuration, conf);
+
+    using namespace EventTimerNS;
+    std::shared_ptr<EventTimer> timer(EventTimerBuilder::create(conf));
+    LoggerStub logger;
+    HandlerStub handler;
+    timer->clearAll();
+    timer->setLogger(&logger);
+    timer->setEventHandler(&handler);
+
+    // Add future events
+    std::vector<Event> events;
+    for (unsigned i=1; i<=10; ++i){
+        Event e ("name" + QString::number(i),
+                 QDateTime::currentDateTime().addDays(1).toString(Event::TIME_FORMAT),
+                i%2==0 ? Event::DYNAMIC : Event::STATIC, 1000*i, i);
+        QVERIFY(timer->addEvent(&e) == i);
+        events.push_back(e);
+    }
+
+    // Add past events
+    Event expired("expired", QDateTime::currentDateTime().addDays(-1).toString(Event::TIME_FORMAT),
+                  Event::STATIC, 10000, 2);
+    QVERIFY(timer->addEvent(&expired) != Event::UNASSIGNED_ID);
+
+    // Test that correct number of future events are returned
+    for (unsigned i=1; i <= events.size()+1; ++i){
+        std::vector<Event> nextEvents = timer->nextEvents(i);
+        QCOMPARE(nextEvents.size(), (i>events.size() ? events.size() : i) );
+        for (unsigned j=0; j<nextEvents.size(); ++j){
+            this->compareEvents(events.at(j), nextEvents.at(j));
+        }
+    }
+}
+
+
+void EventTimerLogicTest::nextEventsTest_data()
 {
     invalidBuildetTest_data();
 }

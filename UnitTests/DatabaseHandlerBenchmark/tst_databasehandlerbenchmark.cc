@@ -47,6 +47,12 @@ private Q_SLOTS:
     void getEventSingle_data();
 
     /**
+     * @brief Test getting next events in relatively small db (get 3 out of 20).
+     */
+    void nextEventsBenchmark();
+    void nextEventsBenchmark_data();
+
+    /**
      * @brief Benchmark adding, updating and removing single element.
      */
     void addUpdateRemoveSingleEvent();
@@ -79,6 +85,18 @@ private Q_SLOTS:
      */
     void get500ExpiredEvents();
     void get500ExpiredEvents_data();
+
+    /**
+     * @brief Benchmark getting next event from db of 1000 events.
+     */
+    void oneNextEventsFromThousandEvents();
+    void oneNextEventsFromThousandEvents_data();
+
+    /**
+     * @brief Benchmark getting 1000 next events from db of 1001 events.
+     */
+    void thousandNextEvents();
+    void thousandNextEvents_data();
 
     /**
      * @brief Benchmark clearing 500 dynamic events.
@@ -242,6 +260,49 @@ void DatabaseHandlerBenchmark::getEventSingle()
 
 
 void DatabaseHandlerBenchmark::getEventSingle_data()
+{
+    constructorBenchmark_data();
+}
+
+
+void DatabaseHandlerBenchmark::nextEventsBenchmark()
+{
+    QFETCH(QString, dbType);
+    QFETCH(QString, dbName);
+    QFETCH(QString, tableName);
+    QFETCH(QString, dbHost);
+    QFETCH(QString, userName);
+    QFETCH(QString, password);
+
+    using namespace EventTimerNS;
+    std::shared_ptr<DatabaseHandler> handler =
+            this->initDB(dbType, dbName, tableName, dbHost, userName, password);
+    handler->clearAll();
+
+    // Add 17 past events
+    for (unsigned i=1; i<=17; ++i){
+        Event e("past"+QString::number(i),
+                QDateTime::currentDateTime().addDays(-i).toString(Event::TIME_FORMAT),
+                Event::STATIC, 0, 0);
+        QVERIFY(handler->addEvent(&e) != Event::UNASSIGNED_ID);
+    }
+    // Add 3 future events
+    for (unsigned i=0; i<3; ++i){
+        Event e("future"+QString::number(i),
+                QDateTime::currentDateTime().addDays(-i).toString(Event::TIME_FORMAT),
+                Event::STATIC, 0, 0);
+        QVERIFY(handler->addEvent(&e) != Event::UNASSIGNED_ID);
+    }
+
+    std::vector<Event> events;
+
+    QBENCHMARK {
+        events = handler->nextEvents(QDateTime::currentDateTime().toString(Event::TIME_FORMAT), 3u);
+    }
+}
+
+
+void DatabaseHandlerBenchmark::nextEventsBenchmark_data()
 {
     constructorBenchmark_data();
 }
@@ -455,6 +516,72 @@ void DatabaseHandlerBenchmark::get500ExpiredEvents_data()
 }
 
 
+void DatabaseHandlerBenchmark::oneNextEventsFromThousandEvents()
+{
+    QFETCH(QString, dbType);
+    QFETCH(QString, dbName);
+    QFETCH(QString, tableName);
+    QFETCH(QString, dbHost);
+    QFETCH(QString, userName);
+    QFETCH(QString, password);
+    QVERIFY(events_.size() == 1000);
+
+    using namespace EventTimerNS;
+    std::shared_ptr<DatabaseHandler> handler =
+            this->initDB(dbType, dbName, tableName, dbHost, userName, password);
+
+    QDateTime lastEventTime = QDateTime::fromString(handler->getEvent(999).timestamp(), Event::TIME_FORMAT);
+    Event e("name1001", lastEventTime.addDays(1).toString(Event::TIME_FORMAT),
+            Event::STATIC, 0, 0);
+    handler->addEvent(&e);
+    QString lastEventTimeStr = lastEventTime.toString(Event::TIME_FORMAT);
+
+    QBENCHMARK {
+        QCOMPARE(handler->nextEvents(lastEventTimeStr, 1).size(),
+                 std::vector<Event>::size_type(1));
+    }
+}
+
+
+void DatabaseHandlerBenchmark::oneNextEventsFromThousandEvents_data()
+{
+    constructorBenchmark_data();
+}
+
+
+void DatabaseHandlerBenchmark::thousandNextEvents()
+{
+    QFETCH(QString, dbType);
+    QFETCH(QString, dbName);
+    QFETCH(QString, tableName);
+    QFETCH(QString, dbHost);
+    QFETCH(QString, userName);
+    QFETCH(QString, password);
+    QVERIFY(events_.size() == 1000);
+
+    using namespace EventTimerNS;
+    std::shared_ptr<DatabaseHandler> handler =
+            this->initDB(dbType, dbName, tableName, dbHost, userName, password);
+
+    QDateTime firstEventTime = QDateTime::fromString(handler->getEvent(1000).timestamp(), Event::TIME_FORMAT);
+    Event e("name1002", firstEventTime.addDays(1).toString(Event::TIME_FORMAT),
+            Event::STATIC, 0, 0);
+    handler->addEvent(&e);
+    QString firstEventTimeStr = firstEventTime.toString(Event::TIME_FORMAT);
+
+    QBENCHMARK {
+        QCOMPARE(handler->nextEvents(firstEventTimeStr, 1000).size(),
+                 std::vector<Event>::size_type(1000));
+    }
+}
+
+
+void DatabaseHandlerBenchmark::thousandNextEvents_data()
+{
+    constructorBenchmark_data();
+}
+
+
 void DatabaseHandlerBenchmark::clear500DynamicEvents()
 {
     QFETCH(QString, dbType);
@@ -539,9 +666,9 @@ void DatabaseHandlerBenchmark::removeThousandEvents()
     // Re-populate database.
     for (unsigned i=0; i<events_.size(); ++i){
         QVERIFY(handler->getEvent(events_[i].id()).id() == Event::UNASSIGNED_ID);
-        // Note: violates precondition. Works with release build only.
-        // Violation has no undesired side effects in this case.
-        QVERIFY(handler->addEvent(&(events_[i])) != Event::UNASSIGNED_ID);
+        Event e = events_[i].copy();
+        QVERIFY(handler->addEvent(&e) != Event::UNASSIGNED_ID);
+        QCOMPARE(e.id(), events_[i].id());
     }
 
     QBENCHMARK_ONCE {

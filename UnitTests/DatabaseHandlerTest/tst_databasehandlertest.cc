@@ -71,6 +71,12 @@ private Q_SLOTS:
     void checkOccuredTest_data();
 
     /**
+     * @brief Test the nextEvents method.
+     */
+    void nextEventsTest();
+    void nextEventsTest_data();
+
+    /**
      * @brief Test adding event and removing them imediately.
      */
     void addRemoveTest();
@@ -435,6 +441,61 @@ void DatabaseHandlerTest::checkOccuredTest()
 
 
 void DatabaseHandlerTest::checkOccuredTest_data()
+{
+    addEventsTest_data();
+}
+
+
+void DatabaseHandlerTest::nextEventsTest()
+{
+    QFETCH(QString, dbType);
+    QFETCH(QString, dbName);
+    QFETCH(QString, tableName);
+    QFETCH(QString, dbHost);
+    QFETCH(QString, userName);
+    QFETCH(QString, password);
+
+    using namespace EventTimerNS;
+    std::shared_ptr<DatabaseHandler> handler =
+            setupDB(dbType, dbName, tableName, dbHost, userName, password);
+    QString timeNow = QDateTime::currentDateTime().toString(Event::TIME_FORMAT);
+    std::vector<Event> futureEvents;
+
+    // Emty db produces empty list of next events without errors
+    QCOMPARE(handler->nextEvents(QDateTime::currentDateTime().toString(Event::TIME_FORMAT), 100).size(),
+             std::vector<Event>::size_type(0));
+    QVERIFY(handler->errorString().isEmpty());
+    QVERIFY(handler->isValid());
+
+    // Add some events
+    for (unsigned i=1; i<10; ++i){
+        Event e("name" + QString::number(i),
+                QDateTime::currentDateTime().addDays(i).toString(Event::TIME_FORMAT),
+                i%2==0 ? Event::DYNAMIC : Event::STATIC,
+                1000*i, i);
+        QVERIFY(handler->addEvent(&e) != Event::UNASSIGNED_ID);
+        QCOMPARE(e.id(), i);
+        futureEvents.push_back(e);
+    }
+
+    // Add one passed event
+    Event e("expired", QDateTime::currentDateTime().addDays(-1).toString(Event::TIME_FORMAT), Event::STATIC);
+    QVERIFY(handler->addEvent(&e) != Event::UNASSIGNED_ID);
+
+    // Verify that correct future events are in the result list, and expired event is not.
+    for (unsigned i=1; i<futureEvents.size(); ++i){
+        std::vector<Event> nextEvents = handler->nextEvents(timeNow, i);
+        QVERIFY(handler->isValid());
+        QVERIFY(handler->errorString().isEmpty());
+        QCOMPARE(nextEvents.size(), std::vector<Event>::size_type(i));
+        for (unsigned j=0; j<nextEvents.size(); ++j){
+            this->compareEvents(nextEvents[j], futureEvents[j]);
+        }
+    }
+}
+
+
+void DatabaseHandlerTest::nextEventsTest_data()
 {
     addEventsTest_data();
 }

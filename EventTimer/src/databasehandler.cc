@@ -48,7 +48,7 @@ QString DatabaseHandler::errorString() const
 unsigned DatabaseHandler::addEvent(Event* e)
 {
     Q_ASSERT(e != nullptr);
-    Q_ASSERT(e->id() == -1);
+    Q_ASSERT(e->id() == Event::UNASSIGNED_ID);
     Q_ASSERT(this->isValid());
 
     QSqlQuery q("INSERT INTO " + tableName_ +
@@ -83,6 +83,39 @@ bool DatabaseHandler::removeEvent(unsigned eventId)
         return false;
     }
     return true;
+}
+
+
+std::vector<Event> DatabaseHandler::nextEvents(QString time, unsigned amount)
+{
+    Q_ASSERT( QDateTime::fromString(time, Event::TIME_FORMAT).isValid() );
+    Q_ASSERT( amount != 0 );
+
+    // Execute query.
+    QSqlQuery q("SELECT * FROM " + tableName_ + " WHERE timestamp > '" + time + "' ORDER BY timestamp", db_);
+    if (q.lastError().type() != QSqlError::NoError){
+        errorString_ = q.lastError().text();
+        return std::vector<Event>();
+    }
+
+    // Gather list of up to 'amount' events from query results.
+    std::vector<Event> events;
+    unsigned i=0;
+    while (i<amount && q.next()){
+        Event e;
+        e.setId( q.value("id").toUInt() );
+        e.setName( q.value("name").toString() );
+        e.setTimestamp( q.value("timestamp").toString() );
+        e.setType( q.value("static").toInt() == 0 ? Event::DYNAMIC : Event::STATIC );
+        e.setInterval( q.value("interval").toUInt() );
+        e.setRepeats( q.value("repeats").toUInt() );
+        Q_ASSERT(e.isValid());
+        events.push_back(e);
+        ++i;
+    }
+
+    errorString_.clear();
+    return events;
 }
 
 

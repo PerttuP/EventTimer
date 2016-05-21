@@ -81,7 +81,15 @@ Event EventTimerLogic::getEvent(unsigned eventId)
 
 std::vector<Event> EventTimerLogic::nextEvents(unsigned amount)
 {
-    return std::vector<Event>(amount);
+    Q_ASSERT(amount != 0);
+
+    std::vector<Event> events = dbHandler_->nextEvents(QDateTime::currentDateTime().toString(Event::TIME_FORMAT), amount);
+
+    if (events.size() == 0 && !dbHandler_->errorString().isEmpty()){
+        logMessage("Could not get next events: " + dbHandler_->errorString());
+    }
+
+    return events;
 }
 
 

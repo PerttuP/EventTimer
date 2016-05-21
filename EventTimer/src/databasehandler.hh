@@ -98,6 +98,17 @@ public:
     bool removeEvent(unsigned eventId);
 
     /**
+     * @brief Get list of next events occuring after given time.
+     * @param time Start time.
+     * @param amount Up to how many events should the result list have.
+     * @return Vector of up to  @p amount events occuring after @p time.
+     * @pre @p time is in a valid format (Event::TIME_FORMAT) and represents a valid datetime.
+     *   @p amount is not 0.
+     * @post If query fails, returns empty vector and updates errorString().
+     */
+    std::vector<Event> nextEvents(QString time, unsigned amount);
+
+    /**
      * @brief Remove all dynamic events from the database.
      * @return True, if all dynamic events were removed successfully.
      * @pre DatabaseHandler is in a valid state.
