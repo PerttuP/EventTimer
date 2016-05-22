@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief Simple example program for using the EventTimer component.
- *  REQUIREMENTS: QSLite installed.
+ *  REQUIREMENTS: SQLite installed.
  * @author Perttu Paarlahti 2016.
  */
 
