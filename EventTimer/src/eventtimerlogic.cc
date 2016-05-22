@@ -154,6 +154,7 @@ void EventTimerLogic::start(CleanupPolicy policy)
 {
     Q_ASSERT(eventHandler_ != nullptr);
     Q_ASSERT(this->isValid());
+    Q_ASSERT(!updateTimer_.isActive());
 
     // Remove expired and dynamic events
     this->clearDynamic();
@@ -176,6 +177,7 @@ void EventTimerLogic::start(CleanupPolicy policy)
 
 void EventTimerLogic::stop()
 {
+    Q_ASSERT(updateTimer_.isActive());
     updateTimer_.stop();
 }
 

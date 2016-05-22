@@ -22,17 +22,15 @@ class EventHandler
 public:
 
     /**
-     * @brief Mandatory virtual constructor.
+     * @brief Mandatory virtual destructor.
      */
     virtual ~EventHandler() {}
 
     /**
      * @brief Notify handler about occured event.
-     * @param eventID Event's id-number.
-     * @param eventName Event's name.
-     * @pre eventID and eventName represent an existing event, that has occured. Event is valid.
+     * @param event Occured event. Event is in its pre-occurence state.
+     * @pre Event is valid and represents an actual event that has occured.
      * @post Handler implementation takes care of handling the event.
-     *  Event handling is expected to be re-entrant.
      */
     virtual void notify(const Event& event) = 0;
 };

@@ -5,7 +5,7 @@ QT -= gui
 CONFIG += c++11
 
 TEMPLATE = lib
-TARGET = eventtimer
+TARGET = EventTimer
 
 INCLUDEPATH += \
     inc/ \
@@ -19,7 +19,7 @@ HEADERS += \
     inc/eventtimerbuilder.hh \
     src/eventtimerlogic.hh \
     src/databasehandler.hh \
-    inc/doxygeninfo.hh
+    doxygeninfo.hh
 
 SOURCES += \
     src/event.cc \

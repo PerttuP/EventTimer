@@ -42,23 +42,23 @@ public:
     virtual ~EventTimer() {}
 
     /**
-     * @brief Time new event.
-     * @param e Event to be timed.
-     * @return Event id assigned to the event. If adding event fails, returns -1.
+     * @brief Schedule new event.
+     * @param e Event to be scheduled.
+     * @return Event id assigned to the event. If adding event fails, returns Event::UNASSIGNED_ID.
      * @pre Event != nullptr. Event is valid. Event id is unassigned.
-     * @post Times the event and assigns it's id.
+     * @post Schedules the event and assigns it's id.
      *  If adding event fails, returns Event::UNASSIGNED_ID and does not modify event.
-     *  Error message is available calling errorString().
+     *  Error message is available calling errorString(). If logger is set, it will be notified.
      */
     virtual unsigned addEvent(Event* e) = 0;
 
     /**
-     * @brief Cancel timed event.
+     * @brief Cancel scheduled event.
      * @param eventId Id of event to be cancelled.
-     * @return true, if event was cancelled successfully.
+     * @return True, if event was cancelled successfully.
      * @pre -
      * @post Removes event or returns false and does not modify schedules.
-     *  In case of failure, error message is available calling errorString().
+     *  In case of failure, error message is available calling errorString(). If logger is set, it will be notified.
      */
     virtual bool removeEvent(unsigned eventId) = 0;
 
@@ -70,6 +70,7 @@ public:
      *  If getting event fails, returns event with unassigned id.
      * @pre -
      * @post If getting event fails, more info is available calling errorString().
+     *  If logger is set, it will be notified in case of failure.
      */
     virtual Event getEvent(unsigned eventId) = 0;
 
@@ -77,17 +78,20 @@ public:
      * @brief Get list of next occuring events.
      * @param amount Number of events included in the list.
      * @return Vector of next occuring events. Vector has up to 'amount' elements.
-     *  All events are valid and represent existing, stored events.
+     *  All events are valid and represent existing, scheduled events.
      * @pre amount != 0.
+     * @post If operation fails, error string is available calling errorString().
+     *  If logger is set, it will be notified in case of error.
      */
     virtual std::vector<Event> nextEvents(unsigned amount) = 0;
 
     /**
      * @brief Remove all dynamic events from schedule.
-     * @return true, if all dynamic events were removed.
+     * @return True, if all dynamic events were removed.
      * @pre -
      * @post Removes all dynamic events or does not modify schedule.
      *  in case of error, error message is available calling errorString().
+     *  If logger is set, it will be notified.
      */
     virtual bool clearDynamic() = 0;
 
@@ -97,6 +101,7 @@ public:
      * @pre -
      * @post Removes all events or does nothing. in case of error, error
      *  message is available calling errorString().
+     *  If logger is set, it will be notified.
      */
     virtual bool clearAll() = 0;
 
@@ -104,7 +109,7 @@ public:
      * @brief Assign handler for occured events.
      * @param handler EventHandler provided by component user.
      *  EventTimer does not take ownership over the handler.
-     * @pre handler != null.
+     * @pre handler != nullptr.
      * @post Handler will be notified when events occur.
      */
     virtual void setEventHandler(EventHandler* handler) = 0;
@@ -127,8 +132,8 @@ public:
 
     /**
      * @brief Check that EventTimer is in a valid state. Call this method after
-     *  instantiation to verify successful initialization. If EventTimer is not in
-     *  a valid state, error message is available calling errorString().
+     *  instantiation to verify success. If EventTimer is not in
+     *  a valid state, error message is available calling errorString(). Discard invalid EventTimers.
      * @return True, if EventTimer is in a valid state.
      * @pre -
      */
@@ -137,14 +142,14 @@ public:
     /**
      * @brief Start or restart scheduling events.
      * @param policy Declares policy on expired static events.
-     * @pre EventTimer is in a valid state. EventHandler has been set.
+     * @pre EventTimer is in a valid state and not running. EventHandler has been set.
      * @post Event handler is norified about events occuring from now on.
      */
     virtual void start(CleanupPolicy policy = CLEAR) = 0;
 
     /**
      * @brief Stop scheduling events.
-     * @pre -
+     * @pre EventTimer has been started.
      * @post EventHandler is no longer norified.
      */
     virtual void stop() = 0;

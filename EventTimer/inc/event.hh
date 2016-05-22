@@ -38,7 +38,7 @@ public:
 
     /**
      * @brief Type of event. Static events are preserved in database between
-     *  application runs, while dynamic events are removed at start-up.
+     *  application runs, while dynamic events are removed when EventTimer is started.
      */
     enum Type{
         STATIC, DYNAMIC
@@ -61,7 +61,7 @@ public:
      * @param interval Time between repeated events (in milliseconds).
      *  Value 0 implies single-shot event.
      * @param repeats Number of repeats.
-     * @pre timestamp is in a valid format. Name is not an empty string.
+     * @pre timestamp is in a valid format and represents a valid datetime. Name is not an empty string.
      *  If interval = 0, repeat should be 0 too.
      * @post Name, time, type, interval and repeats have been set.
      *  Event is in a valid state. Event's id is unassigned.
@@ -79,6 +79,7 @@ public:
 
     /**
      * @brief Create new event having same values as the original (except for id).
+     * @pre -
      * @return New event having same name, timestamp, type, interval and repeats as the original.
      *  New event's id is unassigned.
      */
@@ -86,7 +87,7 @@ public:
 
     /**
      * @brief Get event's name.
-     * @return Name given in constructor.
+     * @return Name given in constructor or set later with setName.
      * @pre -
      */
     QString name() const;
@@ -101,7 +102,7 @@ public:
 
     /**
      * @brief Get event's timestamp.
-     * @return Timestamp given in constructor.
+     * @return Timestamp given in constructor or set later with setTimestamp.
      * @pre -
      */
     QString timestamp() const;
@@ -116,7 +117,7 @@ public:
 
     /**
      * @brief Get event's interval.
-     * @return Interval given in constructor.
+     * @return Interval given in constructor or set later with setInterval.
      * @pre -
      */
     unsigned interval() const;
@@ -131,7 +132,7 @@ public:
 
     /**
      * @brief Get event's repeats.
-     * @return Repeat times given in constructor.
+     * @return Repeat times given in constructor or set later with setRepeats.
      * @pre -
      */
     unsigned repeats() const;
@@ -146,7 +147,7 @@ public:
 
     /**
      * @brief Get event's type.
-     * @return Event type given in constructor.
+     * @return Event type given in constructor or set later with setType.
      * @pre -
      */
     Type type() const;
@@ -163,6 +164,7 @@ public:
      * @brief Get event's unique id.
      * @return Id's unique id set by the event timer.
      *  Returns Event::UNASSIGNED_ID, if id is not assigned yet.
+     * @pre -
      */
     unsigned id() const;
 
@@ -178,8 +180,8 @@ public:
     /**
      * @brief Check if the event is in a valid state.
      * @return True, if event is in a valid state:
-     *  1) Name is not an empty string.
-     *  2) Timestamp is in the right format (TIME_FORMAT).
+     *  1) Name is not an empty string,
+     *  2) Timestamp is in the right format (TIME_FORMAT) and represents a valid datetime, and
      *  3) If interval is 0, then repeats is 0 too.
      */
     bool isValid() const;

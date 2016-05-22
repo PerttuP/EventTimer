@@ -754,10 +754,11 @@ WARN_LOGFILE           =
 # Note: If this tag is empty the current directory is searched.
 
 INPUT                  = inc/eventtimer.hh \
-						 inc/eventhandler.hh \
-						 inc/event.hh \
-						 inc/logger.hh \
-						 inc/eventtimerbuilder.hh \
+			 inc/eventhandler.hh \
+			 inc/event.hh \
+			 inc/logger.hh \
+			 inc/eventtimerbuilder.hh \
+			 doxygeninfo.hh
                          
 
 # This tag can be used to specify the character encoding of the source files

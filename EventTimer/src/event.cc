@@ -44,7 +44,13 @@ Event::~Event()
 
 Event Event::copy() const
 {
-    return Event(name(), timestamp(), type(), interval(), repeats());
+    Event e;
+    e.setName(this->name());
+    e.setTimestamp(this->timestamp());
+    e.setType(this->type());
+    e.setInterval(this->interval());
+    e.setRepeats(this->repeats());
+    return e;
 }
 
 

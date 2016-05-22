@@ -26,17 +26,42 @@ public:
      */
     struct Configuration
     {
-        QString dbType;      // Database type. Refer to QSqlDriver documentation for avalable type strings.
-        QString dbName;      // Name of the database.
-        QString tableName;   // Name for used table in database.
-        QString dbHostName;  // Database host name.
-        QString userName;    // Database user name.
-        QString password;    // Database password.
+        /**
+         * @brief Database type. Refer to QSqlDriver documentation for avalable type strings.
+         */
+        QString dbType;
 
-        // How often EventTimer will check for occured events.
-        // Value 0 has a special meaning: If refreshRate is 0, EventTimer
-        // does not poll the database but calculates the next actual occurence
-        // time and sets timer to it.
+        /**
+         * @brief Name of the database.
+         */
+        QString dbName;
+
+        /**
+         * @brief Name of used table in database.
+         */
+        QString tableName;
+
+        /**
+         * @brief Database host name. Leave empty if not required.
+         */
+        QString dbHostName;
+
+        /**
+         * @brief Database user name. Leave empty if not required.
+         */
+        QString userName;
+
+        /**
+         * @brief Database password. Leave empty if not required.
+         */
+        QString password;
+
+        /**
+         * @brief How often EventTimer will check for occured events (in milliseconds).
+         * Value 0 has a special meaning: If refreshRate is 0, EventTimer
+         * does not poll the database but calculates the next actual occurence
+         * time and sets timer to it.
+         */
         int refreshRateMsec;
     };
 
