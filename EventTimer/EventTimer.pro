@@ -18,7 +18,8 @@ HEADERS += \
     inc/logger.hh \
     inc/eventtimerbuilder.hh \
     src/eventtimerlogic.hh \
-    src/databasehandler.hh
+    src/databasehandler.hh \
+    inc/doxygeninfo.hh
 
 SOURCES += \
     src/event.cc \

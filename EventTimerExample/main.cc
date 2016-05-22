@@ -56,9 +56,6 @@ int main(int argc, char *argv[])
     conf.dbType = "QSQLITE";
     conf.dbName = "demoDB";
     conf.tableName = "events";
-    conf.dbHostName = QString();
-    conf.userName = QString();
-    conf.password = QString();
     conf.refreshRateMsec = 500;
     std::unique_ptr<EventTimer> timer(EventTimerBuilder::create(conf));
     timer->clearAll();

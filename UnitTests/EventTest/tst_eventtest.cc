@@ -34,6 +34,12 @@ private Q_SLOTS:
      */
     void isValidTest();
     void isValidTest_data();
+
+    /**
+     * @brief Test the copy method.
+     */
+    void copyTest();
+    void copyTest_data();
 };
 
 EventTest::EventTest()
@@ -135,6 +141,47 @@ void EventTest::isValidTest_data()
     QTest::newRow("wrong time format")       << "name7" << "2016-05-17 06:00:00"     << EventTimerNS::Event::DYNAMIC << 0u     << 0u << false;
     QTest::newRow("invalid timestamp")       << "name8" << "2016-17-05 06:00:00:000" << EventTimerNS::Event::STATIC  << 0u     << 0u << false;
     QTest::newRow("interval 0, repeats not") << "name9" << "2016-05-17 06:10:10:100" << EventTimerNS::Event::DYNAMIC << 0u     << 4u << false;
+}
+
+
+void EventTest::copyTest()
+{
+    QFETCH(QString, name);
+    QFETCH(QString, timestamp);
+    QFETCH(EventTimerNS::Event::Type, type);
+    QFETCH(unsigned, interval);
+    QFETCH(unsigned, repeats);
+    QFETCH(unsigned, id);
+
+    EventTimerNS::Event e1(name, timestamp, type, interval, repeats);
+
+    // Copy event with unassigned id.
+    EventTimerNS::Event e2 = e1.copy();
+    QCOMPARE(e2.name(), e1.name());
+    QCOMPARE(e2.timestamp(), e1.timestamp());
+    QCOMPARE(e2.type(), e1.type());
+    QCOMPARE(e2.interval(), e1.interval());
+    QCOMPARE(e2.repeats(), e1.repeats());
+    QCOMPARE(e2.id(), EventTimerNS::Event::UNASSIGNED_ID);
+    QCOMPARE(e1.id(), EventTimerNS::Event::UNASSIGNED_ID);
+
+    // Copy event with an assigned id.
+    e1.setId(id);
+    EventTimerNS::Event e3 = e1.copy();
+    QCOMPARE(e3.name(), e1.name());
+    QCOMPARE(e3.timestamp(), e1.timestamp());
+    QCOMPARE(e3.type(), e1.type());
+    QCOMPARE(e3.interval(), e1.interval());
+    QCOMPARE(e3.repeats(), e1.repeats());
+    QCOMPARE(e3.id(), EventTimerNS::Event::UNASSIGNED_ID);
+    QCOMPARE(e1.id(), id);
+}
+
+
+void EventTest::copyTest_data()
+{
+    // Reuse test data from constructor test.
+    constructorTest_data();
 }
 
 
