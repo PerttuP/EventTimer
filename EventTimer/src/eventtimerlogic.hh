@@ -29,7 +29,7 @@ public:
      * @brief Constructor.
      * @param dbHandler DatabaseHandler.
      * @param refreshRate Event schedule refresh rate in milliseconds.
-     * @pre refreshRate > 0.
+     * @pre refreshRate >= 0.
      */
     EventTimerLogic(std::unique_ptr<DatabaseHandler> dbHandler,
                     int refreshRate, QObject* parent = 0);
@@ -67,11 +67,14 @@ private:
     std::unique_ptr<DatabaseHandler> dbHandler_;
     EventHandler* eventHandler_;
     Logger* logger_;
+    int refreshRate_;
     QTimer updateTimer_;
 
     void logMessage(const QString& msg);
 
     bool updateExpired(const Event& e);
+
+    void setTimerToNextEvent();
 };
 
 } // namespace EventTimerNS

@@ -15,13 +15,16 @@ EventTimerLogic::EventTimerLogic(std::unique_ptr<DatabaseHandler> dbHandler,
                                  int refreshRate, QObject* parent) :
     QObject(parent), EventTimer(),
     dbHandler_(std::move(dbHandler)), eventHandler_(nullptr),
-    logger_(nullptr), updateTimer_()
+    logger_(nullptr), refreshRate_(refreshRate), updateTimer_()
 {
+    Q_ASSERT(refreshRate >= 0);
     Q_ASSERT(dbHandler_ != nullptr);
-    Q_ASSERT(refreshRate > 0);
 
-    updateTimer_.setInterval(refreshRate);
     connect(&updateTimer_, SIGNAL(timeout()), this, SLOT(checkEvents()) );
+
+    if (refreshRate_ != 0){
+        updateTimer_.setInterval(refreshRate);
+    }
 }
 
 
@@ -42,6 +45,10 @@ unsigned EventTimerLogic::addEvent(Event* e)
     } else {
         this->logMessage("Event added. Id = " + QString::number(id));
     }
+
+    if (refreshRate_ == 0 && updateTimer_.isActive()){
+        this->setTimerToNextEvent();
+    }
     return id;
 }
 
@@ -56,6 +63,7 @@ bool EventTimerLogic::removeEvent(unsigned eventId)
                          QString::number(eventId) + "): " +
                          errorString() + ".");
     }
+
     return rv;
 }
 
@@ -157,7 +165,11 @@ void EventTimerLogic::start(CleanupPolicy policy)
         }
     }
 
-    updateTimer_.start();
+    if (refreshRate_ == 0){
+        this->setTimerToNextEvent();
+    } else {
+        updateTimer_.start();
+    }
     logMessage("Timer started.");
 }
 
@@ -187,6 +199,10 @@ void EventTimerLogic::checkEvents()
     // Notify event handler.
     for (Event e : expired) {
         eventHandler_->notify(e);
+    }
+
+    if (refreshRate_ == 0){
+        this->setTimerToNextEvent();
     }
 }
 
@@ -226,6 +242,19 @@ bool EventTimerLogic::updateExpired(const Event& e)
         dbHandler_->updateEvent(e.id(), updated);
     }
     return false;
+}
+
+
+void EventTimerLogic::setTimerToNextEvent()
+{
+    std::vector<Event> next = dbHandler_->nextEvents(QDateTime::currentDateTime().toString(Event::TIME_FORMAT), 1);
+    if (next.empty()) return;
+
+    QDateTime nextTime = QDateTime::fromString(next[0].timestamp(), Event::TIME_FORMAT);
+    int diff = QDateTime::currentDateTime().msecsTo(nextTime);
+    Q_ASSERT(diff >= 0);
+
+    updateTimer_.start(diff);
 }
 
 } // namespace EventTimerNS
