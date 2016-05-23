@@ -490,8 +490,9 @@ void DatabaseHandlerBenchmark::get500ExpiredEvents()
 
     // Get expired
     std::vector<Event> expired;
+    QString timeStr = currentTime_.toString(Event::TIME_FORMAT);
     QBENCHMARK_ONCE{
-        expired = handler->checkOccured(currentTime_);
+        expired = handler->checkOccured(timeStr);
     }
 
     // Check that expired events are right.

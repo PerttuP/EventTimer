@@ -158,7 +158,7 @@ void EventTimerLogic::start(CleanupPolicy policy)
 
     // Remove expired and dynamic events
     this->clearDynamic();
-    std::vector<Event> events = dbHandler_->checkOccured(QDateTime::currentDateTime());
+    std::vector<Event> events = dbHandler_->checkOccured(QDateTime::currentDateTime().toString(Event::TIME_FORMAT));
     for (Event e : events) {
         this->updateExpired(e);
         if (policy == NOTIFY){
@@ -185,7 +185,7 @@ void EventTimerLogic::stop()
 void EventTimerLogic::checkEvents()
 {
     // Get events from db.
-    std::vector<Event> expired = dbHandler_->checkOccured(QDateTime::currentDateTime());
+    std::vector<Event> expired = dbHandler_->checkOccured(QDateTime::currentDateTime().toString(Event::TIME_FORMAT));
     if (expired.empty()){
         if (!dbHandler_->errorString().isEmpty()){
             this->logMessage("Could not check for events: " + this->errorString());

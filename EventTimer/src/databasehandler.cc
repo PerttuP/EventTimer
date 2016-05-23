@@ -9,6 +9,7 @@
 #include <QSqlError>
 #include <QSqlRecord>
 #include <QVariant>
+#include <QDateTime>
 
 namespace EventTimerNS
 {
@@ -145,15 +146,14 @@ bool DatabaseHandler::clearAll()
 }
 
 
-std::vector<Event> DatabaseHandler::checkOccured(const QDateTime& time)
+std::vector<Event> DatabaseHandler::checkOccured(const QString& time)
 {
-    Q_ASSERT(time.isValid());
+    Q_ASSERT(QDateTime::fromString(time, Event::TIME_FORMAT).isValid());
     Q_ASSERT(this->isValid());
 
     // Fetch event data.
     QSqlQuery q("SELECT * FROM " + tableName_ +
-                " WHERE timestamp < '" +
-                time.toString("yyyy-MM-dd hh:mm:ss:zzz") + "'", db_);
+                " WHERE timestamp < '" + time + "'", db_);
 
     if (q.lastError().type() != QSqlError::NoError) {
         errorString_ = q.lastError().text();

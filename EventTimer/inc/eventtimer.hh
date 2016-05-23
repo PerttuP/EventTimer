@@ -49,6 +49,8 @@ public:
      * @post Schedules the event and assigns it's id.
      *  If adding event fails, returns Event::UNASSIGNED_ID and does not modify event.
      *  Error message is available calling errorString(). If logger is set, it will be notified.
+     *  Note that dynamic events are cleared in start-method, and therefore adding dynamic events before
+     *  start has no effect.
      */
     virtual unsigned addEvent(Event* e) = 0;
 
@@ -82,6 +84,8 @@ public:
      * @pre amount != 0.
      * @post If operation fails, error string is available calling errorString().
      *  If logger is set, it will be notified in case of error.
+     *  Note: This method does not check for expired events. Therefore this method
+     *  can be trusted only after the timer has been started.
      */
     virtual std::vector<Event> nextEvents(unsigned amount) = 0;
 

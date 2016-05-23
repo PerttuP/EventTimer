@@ -9,7 +9,6 @@
 #define DATABASEHANDLER_HH
 
 #include <QString>
-#include <QDateTime>
 #include <QSqlDatabase>
 #include <vector>
 #include "event.hh"
@@ -29,13 +28,37 @@ public:
      */
     struct DbSetup
     {
+        /**
+         * @brief Database type string (refer to QtSql documentation for available type strings.
+         */
         QString dbType;
+
+        /**
+         * @brief Name of the database.
+         */
         QString dbName;
+
+        /**
+         * @brief Name of the used table in the database.
+         */
         QString tableName;
+
+        /**
+         * @brief Database host name (remote databases only)
+         */
         QString dbHostName;
+
+        /**
+         * @brief Database username. Leave empty if not required.
+         */
         QString userName;
+
+        /**
+         * @brief Database password. Leave empty if not required.
+         */
         QString password;
     };
+
 
     /**
      * @brief Constructor.
@@ -130,9 +153,9 @@ public:
      * @brief Check for occured events.
      * @param time Inspected time.
      * @return Events occured before given time.
-     * @pre time is valid.
+     * @pre time is in valid format (Event::TIME_FORMAT) and represents a valid datetime.
      */
-    std::vector<Event> checkOccured(const QDateTime& time);
+    std::vector<Event> checkOccured(const QString& time);
 
     /**
      * @brief Update event name, time, type, interval and repeats.

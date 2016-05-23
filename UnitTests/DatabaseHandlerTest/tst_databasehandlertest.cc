@@ -428,7 +428,7 @@ void DatabaseHandlerTest::checkOccuredTest()
         events.push_back(e);
     }
 
-    std::vector<Event> occured = handler->checkOccured(current);
+    std::vector<Event> occured = handler->checkOccured(current.toString(Event::TIME_FORMAT));
     QCOMPARE(occured.size(), std::vector<Event>::size_type(5));
     for (Event e : occured){
         QVERIFY(e.id()%2 == 0);
