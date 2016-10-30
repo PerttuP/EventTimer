@@ -1,0 +1,3 @@
+// the configured options and settings for EventTimer
+#define EventTimer_VERSION_MAJOR @VERSION_MAJOR@
+#define EventTimer_VERSION_MINOR @VERSION_MINOR@
