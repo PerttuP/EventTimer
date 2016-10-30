@@ -438,8 +438,8 @@ void EventTimerLogicTest::startClearsDynamicAndExpiredEventsTest()
         else if (i%4 == 2){
             // Expired event that can be updated.
             e = Event("name" + QString::number(i+1),
-                      current.addDays(-(i+1)).toString(Event::TIME_FORMAT),
-                      Event::STATIC, 24*60*60*1000, i+2);
+                      current.addSecs(-(i+1)*60*60).toString(Event::TIME_FORMAT),
+                      Event::STATIC, 60*60*1000, i+2);
         }
         else {
             // Static, future event
@@ -465,7 +465,7 @@ void EventTimerLogicTest::startClearsDynamicAndExpiredEventsTest()
             Event actual = timer->getEvent(e.id());
             QCOMPARE(actual.id(), e.id());
             QCOMPARE(QDateTime::fromString(actual.timestamp(), Event::TIME_FORMAT),
-                     current.addDays(1));
+                     current.addSecs(60*60));
             QCOMPARE(actual.type(), Event::STATIC);
             QCOMPARE(actual.interval(), e.interval());
             QCOMPARE(actual.repeats(), 0u);

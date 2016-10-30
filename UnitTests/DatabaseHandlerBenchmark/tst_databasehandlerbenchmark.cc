@@ -280,14 +280,14 @@ void DatabaseHandlerBenchmark::nextEventsBenchmark()
     handler->clearAll();
 
     // Add 17 past events
-    for (unsigned i=1; i<=17; ++i){
+    for (int i=1; i<=17; ++i){
         Event e("past"+QString::number(i),
                 QDateTime::currentDateTime().addDays(-i).toString(Event::TIME_FORMAT),
                 Event::STATIC, 0, 0);
         QVERIFY(handler->addEvent(&e) != Event::UNASSIGNED_ID);
     }
     // Add 3 future events
-    for (unsigned i=0; i<3; ++i){
+    for (int i=0; i<3; ++i){
         Event e("future"+QString::number(i),
                 QDateTime::currentDateTime().addDays(-i).toString(Event::TIME_FORMAT),
                 Event::STATIC, 0, 0);
